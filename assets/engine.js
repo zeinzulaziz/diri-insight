@@ -1,6 +1,6 @@
 /*
  * Mesin penilaian dan penyusun narasi Diri Insight.
- * Tidak menyentuh DOM. Bisa diuji terpisah dari antarmuka.
+ * Mendukung Mode Lengkap (70 pertanyaan) dan Mode Ringkas (27 pertanyaan inti).
  */
 (function (global) {
   'use strict';
@@ -17,11 +17,16 @@
     SECTION_BY_ID[section.id] = section;
   });
 
-  /* ---------- Utilitas ---------- */
-
-  function clamp(value, min, max) {
-    return Math.max(min, Math.min(max, value));
+  function getQuestions(mode) {
+    if (mode === 'short') {
+      return DATA.questions.filter(function (question) {
+        return Boolean(question.core);
+      });
+    }
+    return DATA.questions;
   }
+
+  /* ---------- Utilitas ---------- */
 
   function round(value) {
     return Math.round(value);
@@ -55,26 +60,21 @@
     return value !== null && value <= 2;
   }
 
-  function isHigh(answers, id) {
-    var value = answerValue(answers, id);
-    return value !== null && value >= 4;
-  }
-
-  function countLow(answers, ids) {
+  function countLow(answers, ids, activeSet) {
     var total = 0;
+    var checked = 0;
     ids.forEach(function (id) {
+      if (activeSet && !activeSet[id]) return;
+      checked += 1;
       if (isLow(answers, id)) total += 1;
     });
-    return total;
+    return { hits: total, checked: checked };
   }
 
   /* ---------- Skor ---------- */
 
   function questionWeightForDim(question, dimKey) {
     if (!dimKey) return 1;
-    /* Pertanyaan masa lalu (keluarga & lingkungan) berbobot penuh di 'akar',
-       namun sedikit lebih ringan (0.85) pada dimensi keterampilan saat ini
-       agar pemulihan masa dewasa tetap tergambar adil. */
     if (dimKey !== 'akar' && (question.section === 'keluarga' || question.section === 'lingkungan')) {
       return 0.85;
     }
@@ -97,11 +97,12 @@
     return round(((weightedSum - totalWeight) / (totalWeight * 4)) * 100);
   }
 
-  function computeScores(answers) {
+  function computeScores(answers, mode) {
+    var activeQuestions = getQuestions(mode);
     var dimensions = {};
 
     DIM_KEYS.forEach(function (key) {
-      var questions = DATA.questions.filter(function (question) {
+      var questions = activeQuestions.filter(function (question) {
         return question.dims.indexOf(key) !== -1;
       });
       dimensions[key] = scoreQuestions(questions, answers, key);
@@ -109,7 +110,7 @@
 
     var sections = {};
     DATA.sections.forEach(function (section) {
-      var questions = DATA.questions.filter(function (question) {
+      var questions = activeQuestions.filter(function (question) {
         return question.section === section.id;
       });
       sections[section.id] = scoreQuestions(questions, answers, null);
@@ -140,24 +141,25 @@
     arahHidup: ['H2', 'H5']
   };
 
-  function computeSignals(answers, scores) {
+  function computeSignals(answers, scores, mode) {
+    var activeQuestions = getQuestions(mode);
+    var activeSet = {};
+    activeQuestions.forEach(function (q) { activeSet[q.id] = true; });
+
     var signals = {};
     var weights = {};
 
     Object.keys(SIGNAL_MAP).forEach(function (key) {
-      var hits = countLow(answers, SIGNAL_MAP[key]);
-      signals[key] = hits > 0;
-      weights[key] = hits / SIGNAL_MAP[key].length;
+      var res = countLow(answers, SIGNAL_MAP[key], activeSet);
+      signals[key] = res.hits > 0;
+      weights[key] = res.checked > 0 ? res.hits / res.checked : 0;
     });
 
-    /* Deteksi kesenjangan kognitif vs perilaku (High Masking):
-       Paham polanya secara intelektual (sadar/pikir tinggi), tetapi
-       regulasi, batas, atau rasa aman tubuh masih tertinggal. */
-    var computed = scores || computeScores(answers);
+    var computed = scores || computeScores(answers, mode);
     var dims = computed.dimensions;
     var cognitiveHigh = (dims.sadar >= 70 || dims.pikir >= 70);
     var somaticLow = (dims.regulasi < 50 || dims.batas < 50 || dims.akar < 45);
-    var maskingQuestionLow = isLow(answers, 'D5') || isLow(answers, 'G1');
+    var maskingQuestionLow = (activeSet.D5 && isLow(answers, 'D5')) || (activeSet.G1 && isLow(answers, 'G1'));
 
     signals.highMasking = Boolean((cognitiveHigh && somaticLow) || (cognitiveHigh && maskingQuestionLow));
     weights.highMasking = signals.highMasking ? 0.75 : 0;
@@ -166,15 +168,17 @@
     return signals;
   }
 
-  function isComplete(answers) {
-    return DATA.questions.every(function (question) {
+  function isComplete(answers, mode) {
+    var activeQuestions = getQuestions(mode);
+    return activeQuestions.every(function (question) {
       var index = answers[question.id];
       return typeof index === 'number' && !!question.options[index];
     });
   }
 
-  function answeredCount(answers) {
-    return DATA.questions.filter(function (question) {
+  function answeredCount(answers, mode) {
+    var activeQuestions = getQuestions(mode);
+    return activeQuestions.filter(function (question) {
       var index = answers[question.id];
       return typeof index === 'number' && !!question.options[index];
     }).length;
@@ -621,7 +625,7 @@
     return result;
   }
 
-  function buildSectionOne(sorted, signals, usedOpen) {
+  function buildSectionOne(sorted, signals, usedOpen, mode) {
     var top = sorted[0];
     var second = sorted[1];
     var low = sorted[sorted.length - 1];
@@ -654,7 +658,12 @@
       ' dan ' + low2.meta.name + ' adalah dua lapisan yang paling sering meminta perhatian.'
     );
 
+    var modeNote = mode === 'short'
+      ? 'Potret ini disusun dari 27 pertanyaan inti; jika ingin menelusuri nuansa yang lebih dalam, kamu dapat mencoba versi 70 pertanyaan kapan saja. '
+      : '';
+
     paragraphs.push(
+      modeNote +
       'Penting untuk diingat: skor ini adalah potret jawabanmu hari ini, bukan norma populasi dan bukan takdir. ' +
       'Yang kamu sebut "diri" bukan hasil akhir dari masa lalu, melainkan pola yang terus kamu ulangi atau ubah sedikit demi sedikit.'
     );
@@ -926,7 +935,7 @@
     return chosen.slice(0, 4);
   }
 
-  function buildNarrative(scores, signals) {
+  function buildNarrative(scores, signals, mode) {
     var sorted = sortedDimensions(scores);
     var top = sorted[0];
     var low = sorted[sorted.length - 1];
@@ -940,7 +949,7 @@
         id: 'sekarang',
         kicker: '01',
         title: 'Siapa kamu sekarang',
-        paragraphs: buildSectionOne(sorted, signals, usedOpen)
+        paragraphs: buildSectionOne(sorted, signals, usedOpen, mode)
       },
       {
         id: 'akar',
@@ -1000,13 +1009,16 @@
     };
   }
 
-  function buildResult(answers) {
-    var scores = computeScores(answers);
-    var signals = computeSignals(answers, scores);
-    var narrative = buildNarrative(scores, signals);
+  function buildResult(answers, mode) {
+    var activeMode = mode === 'short' ? 'short' : 'full';
+    var activeQuestions = getQuestions(activeMode);
+    var scores = computeScores(answers, activeMode);
+    var signals = computeSignals(answers, scores, activeMode);
+    var narrative = buildNarrative(scores, signals, activeMode);
     var sorted = sortedDimensions(scores);
 
     return {
+      mode: activeMode,
       scores: scores,
       signals: signals,
       sorted: sorted,
@@ -1015,19 +1027,21 @@
       practices: narrative.practices,
       pattern: narrative.pattern,
       wordCount: narrative.wordCount,
-      answered: answeredCount(answers),
-      total: DATA.questions.length,
+      answered: answeredCount(answers, activeMode),
+      total: activeQuestions.length,
       generatedAt: new Date().toISOString()
     };
   }
 
   function buildPlainText(result, dateLabel) {
     var lines = [];
+    var modeText = result.mode === 'short' ? 'Mode Ringkas (27 pertanyaan)' : 'Mode Lengkap (70 pertanyaan)';
 
     lines.push('DIRI INSIGHT');
     lines.push('Peta diri, bukan label.');
     lines.push('');
     lines.push('Tanggal: ' + (dateLabel || new Date().toLocaleDateString('id-ID')));
+    lines.push('Mode: ' + modeText);
     lines.push('Profil: ' + result.archetype.title);
     lines.push(result.archetype.line);
     lines.push('');
@@ -1067,6 +1081,7 @@
   }
 
   global.DiriEngine = {
+    getQuestions: getQuestions,
     computeScores: computeScores,
     computeSignals: computeSignals,
     buildResult: buildResult,
