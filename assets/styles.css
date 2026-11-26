@@ -2434,3 +2434,40 @@ body[data-screen="quiz"] .site-footer {
   }
 }
 
+/* Pemilih Mode Ringkas / Lengkap */
+.mode-switch {
+  display: inline-flex;
+  gap: 6px;
+  padding: 4px;
+  margin-bottom: 20px;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+.mode-pill {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--ink-soft);
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 7px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.mode-pill:hover {
+  color: var(--ink);
+}
+
+.mode-pill.is-active {
+  background: var(--sage);
+  color: #FBF8F1;
+}
+
+[data-theme="dark"] .mode-pill.is-active {
+  color: #141C1D;
+}
