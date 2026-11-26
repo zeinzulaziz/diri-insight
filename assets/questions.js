@@ -1,5 +1,5 @@
 /*
- * Bank pertanyaan Diri Insight.
+ * Bank pertanyaan Diri Insight (Revisi: Keseimbangan Dimensi & Kalibrasi Budaya).
  * Setiap opsi punya nilai 1-5: 5 = pola yang paling menopang, 1 = pola yang paling menguras.
  * Satu pertanyaan bisa menyumbang ke beberapa dimensi sekaligus.
  * Urutan opsi diacak saat kuis dimulai, jadi posisi tidak membocorkan jawaban "terbaik".
@@ -126,10 +126,10 @@ window.DIRI_DATA = {
     {
       id: 'A1',
       section: 'keluarga',
-      dims: ['akar'],
+      dims: ['akar', 'empati'],
       prompt: 'Saat kamu masih kecil, bagaimana perasaan sulit seperti sedih atau takut biasanya disikapi di rumah?',
       options: [
-        { text: 'Dibicarakan, ditanyakan, dan ditampung tanpa harus buru-buru selesai.', v: 5 },
+        { text: 'Ada orang rumah yang mau duduk menemani dan mendengarkan sampai aku tenang.', v: 5 },
         { text: 'Kadang ditanyakan, tetapi sering berhenti di "sudah, jangan dipikir".', v: 4 },
         { text: 'Lebih sering diselesaikan dengan nasihat atau solusi, bukan didengar.', v: 3 },
         { text: 'Dianggap berlebihan atau dibalas dengan kemarahan.', v: 1 },
@@ -142,7 +142,7 @@ window.DIRI_DATA = {
       dims: ['akar'],
       prompt: 'Ketika kamu melakukan kesalahan yang cukup besar saat kecil, apa yang paling sering terjadi?',
       options: [
-        { text: 'Dibahas tanpa membuatku merasa buruk sebagai pribadi.', v: 5 },
+        { text: 'Dibahas apa yang keliru tanpa membuatku merasa buruk sebagai pribadi.', v: 5 },
         { text: 'Ada kekecewaan, tetapi juga ruang untuk memperbaiki.', v: 4 },
         { text: 'Dikritik panjang, lalu masalahnya selesai di situ.', v: 2 },
         { text: 'Dihukum atau dipermalukan di depan orang lain.', v: 1 },
@@ -168,7 +168,7 @@ window.DIRI_DATA = {
       dims: ['akar', 'komunikasi'],
       prompt: 'Bagaimana orang tua merespons ketika kamu berbeda pendapat dengan mereka?',
       options: [
-        { text: 'Mendengarkan, lalu menjelaskan sudut pandang mereka.', v: 5 },
+        { text: 'Mendengarkan alasanku dulu, lalu menjelaskan sudut pandang mereka.', v: 5 },
         { text: 'Bisa menerima, meski kadang dengan nada kesal.', v: 4 },
         { text: 'Menanggapinya sebagai pembangkangan.', v: 2 },
         { text: 'Memakai rasa bersalah atau diam panjang untuk menunjukkan kekecewaan.', v: 1 },
@@ -179,13 +179,13 @@ window.DIRI_DATA = {
       id: 'A5',
       section: 'keluarga',
       dims: ['akar'],
-      prompt: 'Di rumahmu dulu, seberapa sering pujian atau pengakuan diucapkan?',
+      prompt: 'Di rumahmu dulu, bagaimana kasih sayang dan pengakuan paling sering ditunjukkan?',
       options: [
-        { text: 'Cukup sering, untuk hal kecil maupun besar.', v: 5 },
-        { text: 'Kadang, biasanya saat ada pencapaian.', v: 4 },
-        { text: 'Jarang; kasih sayang lebih ditunjukkan lewat tindakan.', v: 3 },
+        { text: 'Lewat kata-kata yang hangat sekaligus perhatian sehari-hari.', v: 5 },
+        { text: 'Jarang diucapkan, tetapi sangat terasa lewat tindakan dan perhatian nyata.', v: 4 },
+        { text: 'Biasanya baru muncul saat aku membawa pulang pencapaian.', v: 3 },
         { text: 'Hampir tidak pernah; yang diingat justru kekurangannya.', v: 1 },
-        { text: 'Pujian terasa seperti jebakan atau pemicu masalah.', v: 2 }
+        { text: 'Pujian terasa seperti jebakan atau pemicu tuntutan baru.', v: 2 }
       ]
     },
     {
@@ -233,7 +233,7 @@ window.DIRI_DATA = {
       dims: ['akar', 'empati'],
       prompt: 'Bagaimana keluargamu membicarakan orang di luar keluarga?',
       options: [
-        { text: 'Dengan rasa ingin tahu dan cukup adil.', v: 5 },
+        { text: 'Dengan rasa ingin tahu dan cukup adil melihat sisi mereka.', v: 5 },
         { text: 'Kadang menghakimi, tetapi tidak menjadi kebiasaan.', v: 4 },
         { text: 'Sering mengomentari kekurangan orang lain.', v: 2 },
         { text: 'Dunia dibagi jelas antara "kita" dan "mereka".', v: 1 },
@@ -287,7 +287,7 @@ window.DIRI_DATA = {
       dims: ['empati', 'pikir'],
       prompt: 'Bagaimana lingkunganmu memperlakukan orang yang berbeda, misalnya berbeda agama, kelas, atau cara hidup?',
       options: [
-        { text: 'Penasaran dan cukup terbuka.', v: 5 },
+        { text: 'Terbuka dan memperlakukan mereka setara dalam keseharian.', v: 5 },
         { text: 'Sopan, meski ada jarak yang tidak diucapkan.', v: 3 },
         { text: 'Sering dijadikan bahan lelucon atau kecurigaan.', v: 2 },
         { text: 'Dianggap ancaman atau harus disingkirkan.', v: 1 },
@@ -352,7 +352,7 @@ window.DIRI_DATA = {
       dims: ['resiliensi', 'pikir'],
       prompt: 'Seberapa sering lingkunganmu memberi ruang untuk membicarakan kegagalan tanpa mempermalukan?',
       options: [
-        { text: 'Kegagalan dibahas sebagai pelajaran.', v: 5 },
+        { text: 'Kegagalan dibahas sebagai hal wajar dalam belajar.', v: 5 },
         { text: 'Bisa dibicarakan, tetapi tetap ada rasa malu.', v: 3 },
         { text: 'Kegagalan lebih sering disembunyikan.', v: 2 },
         { text: 'Kegagalan dipakai sebagai bukti bahwa kamu tidak cukup.', v: 1 },
@@ -365,7 +365,7 @@ window.DIRI_DATA = {
       dims: ['pikir', 'empati'],
       prompt: 'Apa yang paling memengaruhi cara kamu melihat "orang luar" saat ini?',
       options: [
-        { text: 'Pengalaman nyata bertemu orang yang berbeda.', v: 5 },
+        { text: 'Pengalaman nyata bertemu dan mengenal orang yang berbeda.', v: 5 },
         { text: 'Didikan keluarga yang menekankan sopan santun.', v: 3 },
         { text: 'Cerita dan stereotip yang diulang di lingkungan.', v: 2 },
         { text: 'Rasa takut yang tidak pernah aku periksa.', v: 1 },
@@ -377,10 +377,10 @@ window.DIRI_DATA = {
     {
       id: 'C1',
       section: 'komunikasi',
-      dims: ['komunikasi', 'regulasi'],
+      dims: ['komunikasi', 'regulasi', 'empati'],
       prompt: 'Saat kamu perlu menyampaikan hal yang tidak nyaman, apa yang biasanya terjadi?',
       options: [
-        { text: 'Aku mengatakannya cukup langsung, dengan usaha menjaga hubungan.', v: 5 },
+        { text: 'Aku mengatakannya langsung dengan bahasa yang tetap menghargai lawan bicara.', v: 5 },
         { text: 'Aku menunggu momen yang tepat dan menyampaikannya sebagian.', v: 3 },
         { text: 'Aku menunda sampai rasanya sudah terlalu besar.', v: 2 },
         { text: 'Aku menghindari, lalu berharap orang lain menebak.', v: 1 },
@@ -393,7 +393,7 @@ window.DIRI_DATA = {
       dims: ['empati', 'komunikasi'],
       prompt: 'Ketika orang lain sedang bercerita, apa yang paling sering kamu lakukan?',
       options: [
-        { text: 'Mendengar sampai selesai, lalu bertanya apa yang dia butuhkan.', v: 5 },
+        { text: 'Mendengar sampai selesai tanpa memotong, lalu menanggapi inti ceritanya.', v: 5 },
         { text: 'Mendengar sambil mencari solusi yang bisa kusampaikan.', v: 3 },
         { text: 'Membandingkan dengan pengalamanku sendiri.', v: 2 },
         { text: 'Menunggu giliran bicara.', v: 2 },
@@ -406,7 +406,7 @@ window.DIRI_DATA = {
       dims: ['regulasi', 'komunikasi', 'sadar'],
       prompt: 'Bagaimana kamu merespons kritik yang menurutmu tidak adil?',
       options: [
-        { text: 'Aku bertanya untuk memahami, lalu menjelaskan bagian yang tidak tepat.', v: 5 },
+        { text: 'Aku mengklarifikasi maksudnya dulu, lalu meluruskan bagian yang keliru.', v: 5 },
         { text: 'Aku merasa tersinggung, tetapi mencoba menanggapinya dengan tenang.', v: 4 },
         { text: 'Aku diam dan menyimpannya lama.', v: 2 },
         { text: 'Aku langsung membela diri atau menyerang balik.', v: 1 },
@@ -416,10 +416,10 @@ window.DIRI_DATA = {
     {
       id: 'C4',
       section: 'komunikasi',
-      dims: ['komunikasi', 'batas', 'regulasi'],
+      dims: ['komunikasi', 'batas', 'regulasi', 'empati'],
       prompt: 'Saat kamu tidak setuju dengan orang yang penting bagimu, bagaimana kamu menunjukkannya?',
       options: [
-        { text: 'Bisa berbeda pendapat tanpa membuatnya menjadi pertarungan.', v: 5 },
+        { text: 'Menyatakan perbedaan pendapat dengan tenang tanpa menyudutkan dia.', v: 5 },
         { text: 'Aku menyampaikannya dengan hati-hati, kadang terlalu hati-hati.', v: 4 },
         { text: 'Aku mengalah dulu, lalu menyimpan kesal.', v: 2 },
         { text: 'Aku meledak setelah menahan terlalu lama.', v: 1 },
@@ -445,7 +445,7 @@ window.DIRI_DATA = {
       dims: ['sadar', 'regulasi'],
       prompt: 'Apa yang biasanya kamu lakukan setelah percakapan yang terasa canggung?',
       options: [
-        { text: 'Aku memeriksa apa yang terjadi, lalu melanjutkan hari.', v: 5 },
+        { text: 'Aku mengecek sebentar apa yang terjadi, lalu melanjutkan aktivitas.', v: 5 },
         { text: 'Aku memikirkannya sebentar, lalu bisa melepasnya.', v: 4 },
         { text: 'Aku mengulang kalimatku dan mencari kesalahan diri.', v: 2 },
         { text: 'Aku menghubungi orang itu untuk memastikan semuanya baik.', v: 2 },
@@ -458,7 +458,7 @@ window.DIRI_DATA = {
       dims: ['komunikasi', 'batas', 'sadar'],
       prompt: 'Bagaimana kamu menyampaikan kebutuhanmu dalam hubungan dekat?',
       options: [
-        { text: 'Cukup jelas, sebelum menjadi tuntutan atau ledakan.', v: 5 },
+        { text: 'Cukup jelas sejak awal, sebelum berubah menjadi tuntutan.', v: 5 },
         { text: 'Aku menyampaikannya, tetapi sering menunggu sampai yakin aman.', v: 3 },
         { text: 'Aku memberi petunjuk dan berharap dipahami.', v: 2 },
         { text: 'Aku menahan sampai orang lain menyadarinya sendiri.', v: 1 },
@@ -471,7 +471,7 @@ window.DIRI_DATA = {
       dims: ['komunikasi', 'regulasi', 'batas'],
       prompt: 'Saat terjadi konflik, apa tujuan utamamu?',
       options: [
-        { text: 'Menyelesaikan masalah tanpa merusak hubungan.', v: 5 },
+        { text: 'Menemukan titik temu tanpa mengorbankan diri atau merusak hubungan.', v: 5 },
         { text: 'Meredakan ketegangan secepat mungkin.', v: 3 },
         { text: 'Membuktikan bahwa aku benar.', v: 2 },
         { text: 'Menghindari pembicaraan sampai semuanya reda.', v: 1 },
@@ -486,7 +486,7 @@ window.DIRI_DATA = {
       dims: ['sadar', 'regulasi'],
       prompt: 'Seberapa cepat kamu menyadari bahwa sesuatu sedang mengganggumu?',
       options: [
-        { text: 'Cukup cepat; aku bisa menamai perasaannya sebelum bertindak.', v: 5 },
+        { text: 'Cukup cepat; aku tahu perasaan apa yang muncul sebelum bereaksi.', v: 5 },
         { text: 'Aku sadar, tetapi biasanya setelah beberapa saat.', v: 4 },
         { text: 'Aku baru sadar ketika sudah meledak atau menarik diri.', v: 2 },
         { text: 'Aku sering bingung apa yang sebenarnya kurasakan.', v: 1 },
@@ -499,7 +499,7 @@ window.DIRI_DATA = {
       dims: ['regulasi', 'resiliensi'],
       prompt: 'Ketika emosi besar muncul, apa yang biasanya kamu lakukan?',
       options: [
-        { text: 'Memberi ruang untuk merasakannya, lalu memilih respons.', v: 5 },
+        { text: 'Menahan diri sebentar sampai mereda, baru memutuskan tindakan.', v: 5 },
         { text: 'Menenangkan diri dulu, meski butuh waktu.', v: 4 },
         { text: 'Sibuk dengan sesuatu agar tidak merasakannya.', v: 2 },
         { text: 'Mengikuti dorongan saat itu juga.', v: 1 },
@@ -512,7 +512,7 @@ window.DIRI_DATA = {
       dims: ['empati', 'sadar'],
       prompt: 'Seberapa akurat kamu bisa menebak apa yang orang lain rasakan?',
       options: [
-        { text: 'Cukup akurat, dan aku tahu kapan harus bertanya.', v: 5 },
+        { text: 'Cukup peka membaca isyaratnya, lalu memastikannya lewat obrolan.', v: 5 },
         { text: 'Kadang akurat, kadang aku memproyeksikan pengalamanku.', v: 4 },
         { text: 'Aku sering salah membaca, terutama saat orang menyembunyikan sesuatu.', v: 2 },
         { text: 'Aku lebih fokus pada kata-kata daripada nada dan bahasa tubuh.', v: 2 },
@@ -525,7 +525,7 @@ window.DIRI_DATA = {
       dims: ['regulasi', 'sadar', 'pikir'],
       prompt: 'Apa yang terjadi ketika kamu merasa dikritik?',
       options: [
-        { text: 'Aku bisa memisahkan isi kritik dari perasaan tidak nyaman.', v: 5 },
+        { text: 'Aku bisa memilah mana masukan yang berguna dan mana yang bukan.', v: 5 },
         { text: 'Aku tersinggung, tetapi bisa kembali ke isinya.', v: 4 },
         { text: 'Aku mendengar semuanya sebagai penilaian tentang diriku.', v: 1 },
         { text: 'Aku langsung mencari pembenaran.', v: 2 },
@@ -535,10 +535,10 @@ window.DIRI_DATA = {
     {
       id: 'D5',
       section: 'ei',
-      dims: ['sadar', 'batas'],
+      dims: ['sadar', 'batas', 'empati'],
       prompt: 'Seberapa sering kamu menyadari bahwa kamu sedang memakai "topeng"?',
       options: [
-        { text: 'Cukup sering; aku tahu kapan aku menyesuaikan diri dan mengapa.', v: 5 },
+        { text: 'Cukup sadar; aku tahu kapan sedang menyesuaikan diri dan kapan bisa lepas.', v: 5 },
         { text: 'Kadang, terutama setelah percakapan yang melelahkan.', v: 4 },
         { text: 'Aku baru menyadarinya ketika sudah terlalu lelah.', v: 2 },
         { text: 'Aku tidak yakin mana yang topeng dan mana yang asli.', v: 1 },
@@ -564,7 +564,7 @@ window.DIRI_DATA = {
       dims: ['regulasi', 'pikir'],
       prompt: 'Seberapa nyaman kamu berada dalam ketidakpastian?',
       options: [
-        { text: 'Cukup nyaman; aku bisa mengambil keputusan dengan informasi terbatas.', v: 5 },
+        { text: 'Cukup nyaman; aku bisa melangkah meski belum semua hal pasti.', v: 5 },
         { text: 'Bisa, tetapi aku butuh rencana cadangan.', v: 4 },
         { text: 'Aku sering mencari kepastian berulang kali.', v: 2 },
         { text: 'Aku menunda keputusan sampai semua terasa pasti.', v: 1 },
@@ -577,7 +577,7 @@ window.DIRI_DATA = {
       dims: ['empati', 'komunikasi'],
       prompt: 'Ketika seseorang dekat denganmu sedang sedih, apa yang biasanya kamu lakukan?',
       options: [
-        { text: 'Hadir, mendengarkan, dan bertanya apa yang membantu.', v: 5 },
+        { text: 'Menemaninya dulu tanpa buru-buru menceramahi atau memperbaiki.', v: 5 },
         { text: 'Memberi saran atau solusi agar dia cepat baik.', v: 3 },
         { text: 'Merasa ikut sedih dan terbawa suasana.', v: 2 },
         { text: 'Menghindar karena tidak tahu harus berbuat apa.', v: 1 },
@@ -590,7 +590,7 @@ window.DIRI_DATA = {
       dims: ['resiliensi', 'batas', 'komunikasi'],
       prompt: 'Seberapa sering kamu meminta bantuan ketika benar-benar membutuhkannya?',
       options: [
-        { text: 'Cukup sering; aku bisa menyebutkan apa yang kubutuhkan.', v: 5 },
+        { text: 'Cukup sering; aku bisa menyebutkan bantuan spesifik yang kubutuhkan.', v: 5 },
         { text: 'Kadang, setelah mencoba sendiri dulu.', v: 4 },
         { text: 'Jarang; aku merasa merepotkan.', v: 2 },
         { text: 'Hampir tidak pernah; aku lebih memilih menanggung sendiri.', v: 1 },
@@ -618,7 +618,7 @@ window.DIRI_DATA = {
       dims: ['pikir', 'sadar'],
       prompt: 'Ketika keyakinanmu terbukti salah, apa yang biasanya terjadi?',
       options: [
-        { text: 'Aku bisa mengubahnya tanpa merasa kehilangan identitas.', v: 5 },
+        { text: 'Aku bisa mengubahnya tanpa merasa harga diriku jatuh.', v: 5 },
         { text: 'Aku butuh waktu, tetapi akhirnya bisa menerima.', v: 4 },
         { text: 'Aku mencari alasan agar keyakinanku tetap benar.', v: 2 },
         { text: 'Aku merasa dipermalukan dan bertahan lebih keras.', v: 1 },
@@ -644,7 +644,7 @@ window.DIRI_DATA = {
       dims: ['pikir', 'resiliensi'],
       prompt: 'Saat menghadapi masalah baru, langkah pertamamu biasanya...',
       options: [
-        { text: 'Mengumpulkan informasi dan mencoba cara kecil.', v: 5 },
+        { text: 'Mengumpulkan informasi dan mencoba langkah kecil.', v: 5 },
         { text: 'Membuat rencana sebelum bergerak.', v: 4 },
         { text: 'Menunggu sampai masalahnya mendesak.', v: 2 },
         { text: 'Membayangkan semua hal yang bisa salah.', v: 1 },
@@ -670,7 +670,7 @@ window.DIRI_DATA = {
       dims: ['sadar', 'pikir', 'resiliensi'],
       prompt: 'Ketika kamu membandingkan dirimu dengan orang lain, apa yang paling sering muncul?',
       options: [
-        { text: 'Rasa kagum yang bisa kujadikan arah, bukan bukti kekurangan.', v: 5 },
+        { text: 'Rasa kagum yang bisa kujadikan referensi, bukan bukti kekurangan.', v: 5 },
         { text: 'Sedikit iri, tetapi aku bisa kembali ke jalanku.', v: 4 },
         { text: 'Rasa tertinggal yang sulit kulepaskan.', v: 2 },
         { text: 'Keyakinan bahwa aku selalu kalah.', v: 1 },
@@ -683,7 +683,7 @@ window.DIRI_DATA = {
       dims: ['regulasi', 'resiliensi'],
       prompt: 'Apa yang kamu lakukan ketika pikiranmu terus mengulang skenario buruk?',
       options: [
-        { text: 'Menyadari polanya, mencatat, lalu mengarahkan perhatian.', v: 5 },
+        { text: 'Menyadari polanya, menuliskannya, lalu mengalihkan perhatian.', v: 5 },
         { text: 'Mencoba menenangkan diri dengan aktivitas.', v: 3 },
         { text: 'Membiarkannya sampai kelelahan sendiri.', v: 2 },
         { text: 'Mencari jaminan dari orang lain berulang kali.', v: 1 },
@@ -696,11 +696,11 @@ window.DIRI_DATA = {
       dims: ['sadar', 'pikir'],
       prompt: 'Seberapa sering kamu bertanya "apa yang sebenarnya aku inginkan" sebelum mengambil keputusan penting?',
       options: [
-        { text: 'Cukup sering; aku memeriksa motif dan nilai yang terlibat.', v: 5 },
+        { text: 'Cukup sering; aku memeriksa motif dan pertimbanganku sendiri.', v: 5 },
         { text: 'Kadang, terutama saat keputusannya besar.', v: 4 },
         { text: 'Jarang; aku mengikuti apa yang diharapkan orang lain.', v: 2 },
         { text: 'Hampir tidak pernah; aku tidak yakin jawabannya.', v: 1 },
-        { text: 'Aku bertanya, tetapi tetap memilih yang aman.', v: 2 }
+        { text: 'Aku bertanya, tetapi tetap memilih yang paling aman.', v: 2 }
       ]
     },
     {
@@ -802,7 +802,7 @@ window.DIRI_DATA = {
       dims: ['sadar', 'komunikasi', 'empati'],
       prompt: 'Apa yang kamu lakukan setelah menyakiti seseorang tanpa sengaja?',
       options: [
-        { text: 'Mengakui, mendengarkan dampaknya, dan memperbaiki.', v: 5 },
+        { text: 'Mengakui kesalahanku, mendengarkan dampaknya, dan memperbaikinya.', v: 5 },
         { text: 'Meminta maaf, meski aku ingin menjelaskan dulu.', v: 4 },
         { text: 'Menjelaskan bahwa niatku baik, berharap itu cukup.', v: 2 },
         { text: 'Menunggu dia melupakan atau memaafkan sendiri.', v: 1 },
@@ -815,7 +815,7 @@ window.DIRI_DATA = {
       dims: ['batas', 'empati'],
       prompt: 'Seberapa nyaman kamu dekat dengan orang tanpa harus menyelesaikan masalahnya?',
       options: [
-        { text: 'Nyaman; kedekatan tidak berarti aku harus memperbaiki semuanya.', v: 5 },
+        { text: 'Cukup nyaman; hadir menemani saja sudah terasa cukup.', v: 5 },
         { text: 'Cukup nyaman, meski aku ingin membantu.', v: 4 },
         { text: 'Aku merasa tidak berguna jika tidak bisa membantu.', v: 2 },
         { text: 'Aku mengambil alih masalahnya agar dia baik.', v: 1 },
@@ -830,7 +830,7 @@ window.DIRI_DATA = {
       dims: ['regulasi', 'resiliensi', 'sadar'],
       prompt: 'Saat stres meningkat, apa yang paling sering kamu lakukan tanpa sadar?',
       options: [
-        { text: 'Aku menyadarinya dan memilih cara yang cukup sehat.', v: 5 },
+        { text: 'Aku menyadarinya lebih awal dan mengambil jeda sebelum kewalahan.', v: 5 },
         { text: 'Aku sibuk, olahraga, atau mengalihkan perhatian untuk sementara.', v: 4 },
         { text: 'Aku makan, belanja, atau scrolling lebih dari yang kubutuhkan.', v: 2 },
         { text: 'Aku menarik diri dan menghilang dari orang lain.', v: 2 },
@@ -843,7 +843,7 @@ window.DIRI_DATA = {
       dims: ['sadar', 'resiliensi'],
       prompt: 'Ketika kamu merasa tidak cukup, apa yang biasanya kamu lakukan?',
       options: [
-        { text: 'Memeriksa suara itu dan mengingatkan diri pada bukti yang nyata.', v: 5 },
+        { text: 'Mengingat kembali hal-hal yang sudah berhasil kulalui dengan wajar.', v: 5 },
         { text: 'Bekerja lebih keras untuk membuktikan bahwa aku mampu.', v: 3 },
         { text: 'Menyibukkan diri agar tidak mendengarnya.', v: 2 },
         { text: 'Menyalahkan diri dan menarik diri.', v: 1 },
@@ -854,13 +854,13 @@ window.DIRI_DATA = {
       id: 'G3',
       section: 'bawah-sadar',
       dims: ['batas', 'akar', 'resiliensi'],
-      prompt: 'Apa yang paling kamu takutkan dalam hubungan dekat?',
+      prompt: 'Apa yang paling kamu rasakan ketika sebuah hubungan mulai terasa sangat dekat?',
       options: [
-        { text: 'Aku bisa menghadapi ketakutan itu tanpa harus dikendalikan.', v: 5 },
-        { text: 'Kehilangan, tetapi aku masih bisa membuka diri.', v: 4 },
-        { text: 'Ditinggalkan atau dikhianati, sehingga aku waspada.', v: 2 },
-        { text: 'Menjadi terlalu bergantung dan kehilangan diri.', v: 2 },
-        { text: 'Aku tidak tahu; aku menghindari kedekatan sebelum itu terjadi.', v: 1 }
+        { text: 'Cukup tenang; rasa takut kecewa tetap ada, tetapi tidak membuatku mundur.', v: 5 },
+        { text: 'Sesekali takut kehilangan, tetapi aku masih bisa membuka diri.', v: 4 },
+        { text: 'Waspada kalau sewaktu-waktu ditinggalkan atau dikhianati.', v: 2 },
+        { text: 'Takut menjadi terlalu bergantung dan kehilangan ruang sendiri.', v: 2 },
+        { text: 'Aku menjaga jarak sejak awal sebelum terlalu dekat.', v: 1 }
       ]
     },
     {
@@ -882,7 +882,7 @@ window.DIRI_DATA = {
       dims: ['regulasi', 'komunikasi', 'sadar'],
       prompt: 'Apa yang biasanya kamu lakukan dengan kemarahan yang tidak bisa kamu ungkapkan?',
       options: [
-        { text: 'Mengenali, memberi nama, dan menyalurkannya dengan cara yang tidak merusak.', v: 5 },
+        { text: 'Meredakannya dulu sendiri, lalu membicarakannya saat kepala dingin.', v: 5 },
         { text: 'Menulis atau bergerak sampai reda.', v: 4 },
         { text: 'Menyimpannya sampai menjadi dingin dan jauh.', v: 2 },
         { text: 'Meledak pada orang yang salah.', v: 1 },
@@ -895,8 +895,8 @@ window.DIRI_DATA = {
       dims: ['resiliensi', 'akar', 'regulasi'],
       prompt: 'Seberapa sering kamu merasa harus "selalu siap" untuk hal buruk?',
       options: [
-        { text: 'Jarang; aku bisa beristirahat dalam keadaan aman.', v: 5 },
-        { text: 'Kadang, terutama saat hidup sedang tenang.', v: 4 },
+        { text: 'Jarang; aku bisa beristirahat saat keadaan memang tenang.', v: 5 },
+        { text: 'Kadang, terutama setelah melewati masa yang berat.', v: 4 },
         { text: 'Sering; ketenangan terasa seperti jebakan.', v: 2 },
         { text: 'Hampir selalu; aku tidak percaya pada hal baik tanpa syarat.', v: 1 },
         { text: 'Aku tidak pernah merasa aman, bahkan saat tidak ada masalah.', v: 1 }
@@ -908,8 +908,8 @@ window.DIRI_DATA = {
       dims: ['sadar', 'akar'],
       prompt: 'Ketika seseorang memuji kamu, apa reaksi pertamamu?',
       options: [
-        { text: 'Menerimanya dan menganggapnya tulus.', v: 5 },
-        { text: 'Berterima kasih, meski sedikit tidak nyaman.', v: 4 },
+        { text: 'Menerimanya dengan wajar dan mengucapkan terima kasih.', v: 5 },
+        { text: 'Berterima kasih, meski sedikit canggung.', v: 4 },
         { text: 'Merasa mereka sedang sopan atau punya maksud lain.', v: 2 },
         { text: 'Mengalihkan pujian atau merendahkan diri.', v: 2 },
         { text: 'Aku tidak percaya pada pujian.', v: 1 }
@@ -921,10 +921,10 @@ window.DIRI_DATA = {
       dims: ['sadar', 'resiliensi', 'pikir'],
       prompt: 'Apa yang kamu lakukan ketika kamu menyadari sedang mengulang pola yang sama?',
       options: [
-        { text: 'Mencari bantuan, mencatat pemicu, dan mencoba langkah berbeda.', v: 5 },
+        { text: 'Mencatat pemicunya dan sengaja mencoba respons yang berbeda.', v: 5 },
         { text: 'Aku sadar, tetapi sering kembali ke pola lama.', v: 3 },
         { text: 'Aku menyalahkan diri karena sudah tahu tetapi tetap mengulang.', v: 2 },
-        { text: 'Aku merasa pola itu adalah takdirku.', v: 1 },
+        { text: 'Aku merasa pola itu sudah menjadi sifatku yang tetap.', v: 1 },
         { text: 'Aku pura-pura tidak melihatnya.', v: 1 }
       ]
     },
@@ -936,10 +936,10 @@ window.DIRI_DATA = {
       dims: ['pikir', 'sadar', 'resiliensi'],
       prompt: 'Apa yang paling membuat hidupmu terasa berarti?',
       options: [
-        { text: 'Hubungan yang jujur dan kontribusi yang selaras dengan nilainya.', v: 5 },
-        { text: 'Rasa berguna bagi orang lain.', v: 3 },
-        { text: 'Pencapaian dan pengakuan.', v: 2 },
-        { text: 'Keamanan dan ketenangan.', v: 4 },
+        { text: 'Hubungan yang jujur dan hidup yang selaras dengan prinsipku.', v: 5 },
+        { text: 'Rasa berguna dan bisa diandalkan orang sekitar.', v: 4 },
+        { text: 'Keamanan dan ketenangan hidup.', v: 4 },
+        { text: 'Pencapaian dan pengakuan dari luar.', v: 2 },
         { text: 'Aku belum menemukan jawabannya.', v: 1 }
       ]
     },
@@ -949,7 +949,7 @@ window.DIRI_DATA = {
       dims: ['pikir', 'resiliensi'],
       prompt: 'Ketika harus memilih antara aman dan tumbuh, apa yang biasanya kamu pilih?',
       options: [
-        { text: 'Tumbuh dengan risiko yang sudah kuhitung.', v: 5 },
+        { text: 'Tumbuh dengan risiko yang sudah kuperhitungkan.', v: 5 },
         { text: 'Aman dulu, lalu tumbuh perlahan.', v: 4 },
         { text: 'Aman, karena risiko terasa terlalu besar.', v: 2 },
         { text: 'Aku menunggu sampai tidak ada pilihan lain.', v: 1 },
@@ -962,7 +962,7 @@ window.DIRI_DATA = {
       dims: ['sadar', 'pikir', 'batas'],
       prompt: 'Seberapa jelas kamu bisa menjelaskan nilai yang kamu pegang?',
       options: [
-        { text: 'Cukup jelas; aku bisa menyebutkan dan memberi contohnya.', v: 5 },
+        { text: 'Cukup jelas; aku tahu batasan apa yang tidak akan kulanggar.', v: 5 },
         { text: 'Aku tahu rasanya, meski sulit menjelaskan.', v: 3 },
         { text: 'Aku mengikuti nilai keluarga tanpa banyak bertanya.', v: 2 },
         { text: 'Aku menyesuaikan nilai dengan situasi agar diterima.', v: 1 },
@@ -975,7 +975,7 @@ window.DIRI_DATA = {
       dims: ['sadar', 'resiliensi'],
       prompt: 'Apa yang kamu lakukan ketika pencapaianmu tidak diakui?',
       options: [
-        { text: 'Aku tetap bisa menghargai prosesnya sendiri.', v: 5 },
+        { text: 'Aku tetap bisa menghargai usahaku sendiri.', v: 5 },
         { text: 'Kecewa, tetapi tidak lama.', v: 4 },
         { text: 'Aku bekerja lebih keras agar akhirnya diakui.', v: 2 },
         { text: 'Aku merasa usahaku tidak berarti.', v: 1 },
@@ -988,10 +988,10 @@ window.DIRI_DATA = {
       dims: ['pikir', 'sadar', 'resiliensi'],
       prompt: 'Jika hidupmu berjalan sesuai rencana lima tahun ke depan, apa yang paling penting untukmu?',
       options: [
-        { text: 'Menjadi lebih utuh, bukan hanya lebih sukses.', v: 5 },
+        { text: 'Merasa utuh dan tenang dengan pilihan hidupku sendiri.', v: 5 },
         { text: 'Punya hubungan dan pekerjaan yang cukup stabil.', v: 4 },
+        { text: 'Tidak mengulangi pola buruk yang pernah kualami.', v: 3 },
         { text: 'Diakui dan dianggap berhasil oleh orang lain.', v: 2 },
-        { text: 'Tidak mengulangi kesalahan orang tuaku.', v: 3 },
         { text: 'Aku tidak berani membayangkannya.', v: 1 }
       ]
     },
@@ -1003,8 +1003,8 @@ window.DIRI_DATA = {
       dims: ['resiliensi', 'sadar'],
       prompt: 'Seberapa besar pengalaman sulit di masa lalu masih memengaruhi responsmu hari ini?',
       options: [
-        { text: 'Aku sudah bisa memisahkan masa lalu dari pilihan saat ini.', v: 5 },
-        { text: 'Masih terasa, tetapi aku punya cara untuk tidak dikendalikannya.', v: 4 },
+        { text: 'Aku bisa melihatnya sebagai masa lalu tanpa terbawa saat ini.', v: 5 },
+        { text: 'Masih terasa sesekali, tetapi tidak mengendalikan keputusanku.', v: 4 },
         { text: 'Cukup besar; beberapa situasi masih memicu reaksi kuat.', v: 2 },
         { text: 'Sangat besar; aku sering bereaksi seperti sedang di masa lalu.', v: 1 },
         { text: 'Aku tidak tahu, karena aku tidak pernah menoleh ke belakang.', v: 2 }
@@ -1016,8 +1016,8 @@ window.DIRI_DATA = {
       dims: ['akar', 'batas', 'resiliensi'],
       prompt: 'Apakah ada pengalaman yang membuatmu sulit mempercayai orang?',
       options: [
-        { text: 'Tidak ada yang dominan; aku bisa membangun kepercayaan.', v: 5 },
-        { text: 'Ada luka, tetapi aku masih bisa membuka diri.', v: 4 },
+        { text: 'Tidak ada yang menghalangi; aku bisa membangun kepercayaan bertahap.', v: 5 },
+        { text: 'Ada luka lama, tetapi aku masih bisa membuka diri.', v: 4 },
         { text: 'Aku waspada hampir setiap saat.', v: 2 },
         { text: 'Aku lebih memilih tidak bergantung pada siapa pun.', v: 1 },
         { text: 'Aku tidak yakin; aku belum pernah mengujinya.', v: 2 }
@@ -1029,20 +1029,20 @@ window.DIRI_DATA = {
       dims: ['sadar', 'resiliensi'],
       prompt: 'Bagaimana kamu memahami hal yang paling menyakitkan dalam hidupmu?',
       options: [
-        { text: 'Sebagai bagian dari cerita yang sudah kuolah, bukan identitasku.', v: 5 },
-        { text: 'Aku masih mengolahnya, tetapi tidak lagi setiap hari.', v: 4 },
-        { text: 'Aku belum bisa membicarakannya tanpa terbawa.', v: 2 },
+        { text: 'Sebagai bagian dari perjalanan yang sudah kupahami pelajarannya.', v: 5 },
+        { text: 'Aku masih memprosesnya, tetapi tidak lagi mengganggu hari-hariku.', v: 4 },
+        { text: 'Aku belum bisa membicarakannya tanpa terbawa emosi.', v: 2 },
         { text: 'Aku menyimpannya dan berpura-pura tidak ada.', v: 1 },
-        { text: 'Aku merasa pengalaman itu menjelaskan mengapa aku rusak.', v: 1 }
+        { text: 'Aku merasa pengalaman itu membuatku rusak.', v: 1 }
       ]
     },
     {
       id: 'I4',
       section: 'pengalaman',
       dims: ['sadar', 'batas', 'resiliensi'],
-      prompt: 'Apa yang kamu butuhkan untuk merasa lebih utuh saat ini?',
+      prompt: 'Apa yang paling kamu butuhkan untuk merasa lebih utuh saat ini?',
       options: [
-        { text: 'Ruang untuk mengenal diri, dukungan yang tepat, dan waktu.', v: 5 },
+        { text: 'Konsistensi menjaga ritme hidup dan batas yang sudah kupilih.', v: 5 },
         { text: 'Seseorang yang mau mendengar tanpa menghakimi.', v: 4 },
         { text: 'Bukti bahwa aku mampu berdiri sendiri.', v: 3 },
         { text: 'Pengakuan dari orang yang dulu tidak memberikannya.', v: 2 },

@@ -905,6 +905,20 @@
 
   /* ---------- Inisialisasi ---------- */
 
+  /*
+   * Manifest hanya dimuat lewat http/https. Di file:// Chrome memblokirnya
+   * karena origin null dan memenuhi console dengan error CORS.
+   */
+  function addManifest() {
+    if (window.location.protocol !== 'http:' && window.location.protocol !== 'https:') return;
+    if (document.querySelector('link[rel="manifest"]')) return;
+
+    var link = document.createElement('link');
+    link.rel = 'manifest';
+    link.href = 'assets/site.webmanifest';
+    document.head.appendChild(link);
+  }
+
   function cacheElements() {
     els.screenLanding = document.getElementById('screen-landing');
     els.screenQuiz = document.getElementById('screen-quiz');
@@ -1040,6 +1054,7 @@
     loadSavedState();
     renderDimensionList();
     updateThemeButton();
+    addManifest();
     bindEvents();
     refreshGlobalState();
 

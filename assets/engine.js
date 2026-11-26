@@ -1,5 +1,5 @@
 /*
- * Mesin penilaian dan penyusun narasi.
+ * Mesin penilaian dan penyusun narasi Diri Insight (Revisi Logika & Sinkronisasi Narasi).
  * Tidak menyentuh DOM. Bisa diuji terpisah dari antarmuka.
  */
 (function (global) {
@@ -60,6 +60,14 @@
     return value !== null && value >= 4;
   }
 
+  function countLow(answers, ids) {
+    var total = 0;
+    ids.forEach(function (id) {
+      if (isLow(answers, id)) total += 1;
+    });
+    return total;
+  }
+
   /* ---------- Skor ---------- */
 
   function scoreQuestions(questions, answers) {
@@ -98,28 +106,40 @@
     return { dimensions: dimensions, sections: sections };
   }
 
+  var SIGNAL_MAP = {
+    rumahDingin: ['A1', 'A5'],
+    kritikKeras: ['A2', 'A5'],
+    emosiTidakAman: ['A1', 'A4', 'A7'],
+    kontrolKuat: ['A3', 'A6'],
+    rumahTakStabil: ['A8', 'A10'],
+    peranMenengahi: ['A6', 'A10'],
+    tekananBudaya: ['B1', 'B3'],
+    pernahDibully: ['B4', 'B5'],
+    kritikDiri: ['D6', 'E5', 'G2', 'G7'],
+    ruminasi: ['C6', 'D10', 'E6'],
+    menghindarKonflik: ['C1', 'C4', 'C8', 'F4'],
+    peoplePleasing: ['C5', 'F1', 'F5', 'F8'],
+    menyimpanSendiri: ['D9', 'G1', 'G5'],
+    waspada: ['G6', 'I2'],
+    lukaBelumOlah: ['I1', 'I3'],
+    tidakAmanSendiri: ['G4'],
+    pujianSulit: ['G7'],
+    nilaiKabur: ['H1', 'H3'],
+    arahHidup: ['H2', 'H5']
+  };
+
   function computeSignals(answers) {
-    return {
-      rumahDingin: isLow(answers, 'A1') || isLow(answers, 'A5'),
-      kritikKeras: isLow(answers, 'A2') || isLow(answers, 'A5'),
-      emosiTidakAman: isLow(answers, 'A1') || isLow(answers, 'A4') || isLow(answers, 'A7'),
-      kontrolKuat: isLow(answers, 'A3') || isLow(answers, 'A6'),
-      rumahTakStabil: isLow(answers, 'A8') || isLow(answers, 'A10'),
-      peranMenengahi: isLow(answers, 'A6') || isLow(answers, 'A10'),
-      tekananBudaya: isLow(answers, 'B1') || isLow(answers, 'B3'),
-      pernahDibully: isLow(answers, 'B4') || isLow(answers, 'B5'),
-      kritikDiri: isLow(answers, 'D6') || isLow(answers, 'E5') || isLow(answers, 'G2') || isLow(answers, 'G7'),
-      ruminasi: isLow(answers, 'C6') || isLow(answers, 'D10') || isLow(answers, 'E6'),
-      menghindarKonflik: isLow(answers, 'C1') || isLow(answers, 'C4') || isLow(answers, 'C8') || isLow(answers, 'F4'),
-      peoplePleasing: isLow(answers, 'C5') || isLow(answers, 'F1') || isLow(answers, 'F5') || isLow(answers, 'F8'),
-      menyimpanSendiri: isLow(answers, 'D9') || isLow(answers, 'G1') || isLow(answers, 'G5'),
-      waspada: isLow(answers, 'G6') || isLow(answers, 'I2'),
-      lukaBelumOlah: isLow(answers, 'I1') || isLow(answers, 'I3'),
-      tidakAmanSendiri: isLow(answers, 'G4'),
-      pujianSulit: isLow(answers, 'G7'),
-      nilaiKabur: isLow(answers, 'H1') || isLow(answers, 'H3'),
-      arahHidup: isLow(answers, 'H2') || isLow(answers, 'H5')
-    };
+    var signals = {};
+    var weights = {};
+
+    Object.keys(SIGNAL_MAP).forEach(function (key) {
+      var hits = countLow(answers, SIGNAL_MAP[key]);
+      signals[key] = hits > 0;
+      weights[key] = hits / SIGNAL_MAP[key].length;
+    });
+
+    signals._weights = weights;
+    return signals;
   }
 
   function isComplete(answers) {
@@ -221,10 +241,6 @@
     }
   };
 
-  /*
-   * Varian kedua dipakai ketika teks pembuka dimensi yang sama sudah muncul
-   * di bagian lain. Tanpa ini, narasi bisa mengulang paragraf yang identik.
-   */
   var DIM_ALT = {
     akar: {
       high: 'Rasa amanmu tidak dibangun dari janji bahwa semuanya akan baik, tetapi dari pengalaman bahwa hubungan bisa bertahan saat ada masalah.',
@@ -340,8 +356,13 @@
   };
 
   function tension(topKey, lowKey) {
-    return TENSION[topKey + '-' + lowKey] ||
-      'Kekuatan terbesarmu ada di ' + DATA.dimensions[topKey].name + ', sementara ' + DATA.dimensions[lowKey].name + ' adalah tempat kamu paling sering kembali belajar. Kombinasi ini membuat profilmu terasa kontradiktif di beberapa momen, dan itu wajar.';
+    var direct = TENSION[topKey + '-' + lowKey];
+    if (direct) return direct;
+
+    var reverse = TENSION[lowKey + '-' + topKey];
+    if (reverse) return reverse;
+
+    return 'Kekuatan terbesarmu ada di ' + DATA.dimensions[topKey].name + ', sementara ' + DATA.dimensions[lowKey].name + ' adalah tempat kamu paling sering kembali belajar. Kombinasi ini membuat profilmu terasa kontradiktif di beberapa momen, dan itu wajar.';
   }
 
   var SIGNAL_TEXT = {
@@ -510,29 +531,57 @@
   /* ---------- Penyusun narasi ---------- */
 
   function sortedDimensions(scores) {
-    return DIM_KEYS.map(function (key) {
-      return { key: key, value: scores.dimensions[key], meta: DATA.dimensions[key] };
+    return DIM_KEYS.map(function (key, idx) {
+      return { key: key, value: scores.dimensions[key], meta: DATA.dimensions[key], idx: idx };
     }).sort(function (a, b) {
-      return b.value - a.value;
+      if (b.value !== a.value) return b.value - a.value;
+      /* Tie-breaker: prioritaskan dimensi dengan deviasi lebih tajam dari titik tengah 50 */
+      var diffA = Math.abs(a.value - 50);
+      var diffB = Math.abs(b.value - 50);
+      if (diffB !== diffA) return diffB - diffA;
+      return a.idx - b.idx;
     });
   }
 
+  var PATTERN_LABELS = {
+    peoplePleasing: 'Menjaga kedamaian dengan mengorbankan ruang sendiri',
+    menghindarKonflik: 'Menunda percakapan sulit sampai biayanya menumpuk',
+    kritikDiri: 'Mengubah standar tinggi menjadi kritik yang tidak selesai',
+    ruminasi: 'Mengulang skenario untuk mencari rasa aman',
+    waspada: 'Tetap waspada bahkan saat tidak ada ancaman',
+    menyimpanSendiri: 'Menanggung sendiri agar tidak merepotkan',
+    lukaBelumOlah: 'Merespons situasi sekarang dengan alarm masa lalu'
+  };
+
   function pickPattern(signals) {
-    if (signals.peoplePleasing) return 'Menjaga kedamaian dengan mengorbankan ruang sendiri';
-    if (signals.menghindarKonflik) return 'Menunda percakapan sulit sampai biayanya menumpuk';
-    if (signals.kritikDiri) return 'Mengubah standar tinggi menjadi kritik yang tidak selesai';
-    if (signals.ruminasi) return 'Mengulang skenario untuk mencari rasa aman';
-    if (signals.waspada) return 'Tetap waspada bahkan saat tidak ada ancaman';
-    if (signals.menyimpanSendiri) return 'Menanggung sendiri agar tidak merepotkan';
-    if (signals.lukaBelumOlah) return 'Merespons situasi sekarang dengan alarm masa lalu';
-    return 'Menjaga keseimbangan antara kebutuhan sendiri dan orang lain';
+    var candidates = Object.keys(PATTERN_LABELS).filter(function (key) {
+      return !!signals[key];
+    });
+
+    if (!candidates.length) {
+      return 'Menjaga keseimbangan antara kebutuhan sendiri dan orang lain';
+    }
+
+    var weights = signals._weights || {};
+    candidates.sort(function (a, b) {
+      return (weights[b] || 0) - (weights[a] || 0);
+    });
+
+    return PATTERN_LABELS[candidates[0]];
   }
 
   function pickSignals(signals, keys, limit, used) {
-    var result = [];
-    keys.forEach(function (key) {
-      if (signals[key] && result.length < limit && !(used && used[key])) result.push(key);
+    var weights = signals._weights || {};
+    var active = keys.filter(function (key) {
+      return signals[key] && !(used && used[key]);
     });
+
+    /* Urutkan berdasarkan intensitas sinyal tertinggi lebih dulu */
+    active.sort(function (a, b) {
+      return (weights[b] || 0) - (weights[a] || 0);
+    });
+
+    var result = active.slice(0, limit);
     if (used) {
       result.forEach(function (key) { used[key] = true; });
     }
@@ -628,7 +677,7 @@
       );
     }
 
-    if (pengalaman >= 70) {
+    if (pengalaman >= 70 && !signals.lukaBelumOlah) {
       paragraphs.push(
         'Bagian pengalaman yang menyakitkan tampaknya sudah cukup kamu olah. Kamu masih bisa tersentuh olehnya, tetapi tidak lagi hidup di dalamnya setiap hari. ' +
         'Itu bukan berarti semuanya selesai, hanya berarti kamu punya lebih banyak pilihan daripada reaksi lamamu.'
@@ -793,11 +842,20 @@
     return paragraphs;
   }
 
+  /* Pasangan latihan yang terlalu mirip agar tidak muncul bersamaan */
+  var PRACTICE_OVERLAPS = {
+    peoplePleasing: ['batas'],
+    menghindarKonflik: ['komunikasi'],
+    ruminasi: ['pikir'],
+    waspada: ['akar']
+  };
+
   function buildPractices(sorted, signals) {
     var chosen = [];
     var used = {};
+    var weights = signals._weights || {};
 
-    function addPractice(key) {
+    function addDimPractice(key) {
       if (!key || used[key] || chosen.length >= 4) return;
       var practice = PRACTICES[key];
       if (!practice) return;
@@ -805,15 +863,23 @@
       chosen.push(practice);
     }
 
-    addPractice(sorted[sorted.length - 1].key);
-    addPractice(sorted[sorted.length - 2].key);
+    addDimPractice(sorted[sorted.length - 1].key);
+    addDimPractice(sorted[sorted.length - 2].key);
 
     var signalPriority = [
       'peoplePleasing', 'kritikDiri', 'ruminasi', 'menghindarKonflik', 'waspada', 'lukaBelumOlah', 'menyimpanSendiri'
-    ];
+    ].filter(function (key) {
+      return !!signals[key];
+    }).sort(function (a, b) {
+      return (weights[b] || 0) - (weights[a] || 0);
+    });
 
     signalPriority.some(function (key) {
-      if (!signals[key] || chosen.length >= 4) return false;
+      if (chosen.length >= 4) return true;
+      var overlaps = PRACTICE_OVERLAPS[key] || [];
+      var isDuplicateTopic = overlaps.some(function (dimKey) { return !!used[dimKey]; });
+      if (isDuplicateTopic) return false;
+
       var practice = SIGNAL_PRACTICES[key];
       if (!practice || used['signal-' + key]) return false;
       used['signal-' + key] = true;
@@ -821,8 +887,8 @@
       return chosen.length >= 4;
     });
 
-    for (var i = sorted.length - 1; i >= 0 && chosen.length < 4; i -= 1) {
-      addPractice(sorted[i].key);
+    for (var i = sorted.length - 3; i >= 0 && chosen.length < 4; i -= 1) {
+      addDimPractice(sorted[i].key);
     }
 
     return chosen.slice(0, 4);
@@ -925,11 +991,6 @@
 
   function buildPlainText(result, dateLabel) {
     var lines = [];
-    var scoreLabels = {};
-
-    DATA.dimensions && Object.keys(DATA.dimensions).forEach(function (key) {
-      scoreLabels[key] = DATA.dimensions[key].name;
-    });
 
     lines.push('DIRI INSIGHT');
     lines.push('Peta diri, bukan label.');
