@@ -207,7 +207,7 @@
     document.documentElement.setAttribute('data-theme', theme);
     if (persist) writeString(KEYS.theme, theme);
     updateThemeButton();
-    if (state.result && els.resultContent && !els.resultContent.hidden) renderChart();
+    if (state.result && els.content && !els.content.hidden) renderChart();
   }
 
   function toggleTheme() {
@@ -274,7 +274,7 @@
 
     if (opts.focus !== false) {
       if (name === 'landing') focusHeading(els.heroTitle);
-      if (name === 'results' && els.resultContent && !els.resultContent.hidden) focusHeading(els.resultTitle);
+      if (name === 'results' && els.content && !els.content.hidden) focusHeading(els.resultTitle);
     }
   }
 
@@ -1074,18 +1074,15 @@
       state.chart = null;
     }
 
-    els.resultContent.hidden = true;
+    els.content.hidden = true;
     els.narrative.innerHTML = '';
     els.practiceList.innerHTML = '';
     els.scoreBars.innerHTML = '';
     refreshGlobalState();
     showToast('Jawaban dihapus. Mulai dari awal.');
 
-    if (window.location.hash === '#/tes') {
-      openQuiz();
-    } else {
-      window.location.hash = '#/tes';
-    }
+    window.location.hash = '#/tes';
+    window.location.reload();
   }
 
   /* ---------- Bagian landing yang dinamis ---------- */
