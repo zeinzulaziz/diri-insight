@@ -93,9 +93,14 @@
       <div class="hero">
         <div class="container hero-grid">
           <div class="hero-copy">
-            <p class="eyebrow">Alat refleksi diri · 70 pertanyaan</p>
+            <p class="eyebrow" id="heroEyebrow">Alat refleksi diri · 70 pertanyaan lengkap</p>
             <h1 id="heroTitle" class="hero-title">Kamu bukan <em>teka-teki</em> yang harus ditebak.</h1>
             <p class="hero-lead">Diri Insight membacamu dari delapan lapisan: cara kamu tumbuh, berkomunikasi, mengelola emosi, dan pola yang diam-diam kamu ulangi. Hasilnya berupa peta, bukan vonis.</p>
+
+            <div class="mode-switch" role="group" aria-label="Pilih kedalaman analisis">
+              <button type="button" class="mode-pill is-active" id="modeFull" aria-pressed="true">Lengkap · 70 soal</button>
+              <button type="button" class="mode-pill" id="modeShort" aria-pressed="false">Ringkas · 27 soal</button>
+            </div>
 
             <div class="hero-actions">
               <a class="button button-primary" id="heroStart" href="#/tes">Mulai memetakan diri</a>
@@ -103,7 +108,7 @@
             </div>
 
             <p class="hero-meta">
-              <span>15-25 menit</span>
+              <span id="heroDuration">15-25 menit</span>
               <span>Tanpa akun</span>
               <span>Progres tersimpan di perangkat</span>
             </p>
