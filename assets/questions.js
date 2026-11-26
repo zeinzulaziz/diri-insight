@@ -1,8 +1,6 @@
 /*
- * Bank pertanyaan Diri Insight (Revisi: Keseimbangan Dimensi & Kalibrasi Budaya).
+ * Bank pertanyaan Diri Insight (70 pertanyaan lengkap, 27 pertanyaan inti [core: true]).
  * Setiap opsi punya nilai 1-5: 5 = pola yang paling menopang, 1 = pola yang paling menguras.
- * Satu pertanyaan bisa menyumbang ke beberapa dimensi sekaligus.
- * Urutan opsi diacak saat kuis dimulai, jadi posisi tidak membocorkan jawaban "terbaik".
  */
 window.DIRI_DATA = {
   dimensions: {
@@ -126,6 +124,7 @@ window.DIRI_DATA = {
     {
       id: 'A1',
       section: 'keluarga',
+      core: true,
       dims: ['akar', 'empati'],
       prompt: 'Saat kamu masih kecil, bagaimana perasaan sulit seperti sedih atau takut biasanya disikapi di rumah?',
       options: [
@@ -191,6 +190,7 @@ window.DIRI_DATA = {
     {
       id: 'A6',
       section: 'keluarga',
+      core: true,
       dims: ['akar', 'resiliensi'],
       prompt: 'Apa peran yang paling sering kamu ambil di keluarga saat masih kecil?',
       options: [
@@ -256,6 +256,7 @@ window.DIRI_DATA = {
     {
       id: 'A11',
       section: 'keluarga',
+      core: true,
       dims: ['akar', 'batas', 'komunikasi'],
       prompt: 'Apa yang paling kamu bawa dari cara keluargamu memperlakukan satu sama lain?',
       options: [
@@ -271,6 +272,7 @@ window.DIRI_DATA = {
     {
       id: 'B1',
       section: 'lingkungan',
+      core: true,
       dims: ['akar', 'pikir'],
       prompt: 'Di lingkungan tempatmu tumbuh, seberapa kuat pesan bahwa kamu harus mengikuti cara yang sudah ada?',
       options: [
@@ -310,6 +312,7 @@ window.DIRI_DATA = {
     {
       id: 'B4',
       section: 'lingkungan',
+      core: true,
       dims: ['akar', 'sadar'],
       prompt: 'Saat kecil, seberapa aman kamu menunjukkan hal yang membuatmu berbeda dari teman sebaya?',
       options: [
@@ -349,6 +352,7 @@ window.DIRI_DATA = {
     {
       id: 'B7',
       section: 'lingkungan',
+      core: true,
       dims: ['resiliensi', 'pikir'],
       prompt: 'Seberapa sering lingkunganmu memberi ruang untuk membicarakan kegagalan tanpa mempermalukan?',
       options: [
@@ -377,6 +381,7 @@ window.DIRI_DATA = {
     {
       id: 'C1',
       section: 'komunikasi',
+      core: true,
       dims: ['komunikasi', 'regulasi', 'empati'],
       prompt: 'Saat kamu perlu menyampaikan hal yang tidak nyaman, apa yang biasanya terjadi?',
       options: [
@@ -416,6 +421,7 @@ window.DIRI_DATA = {
     {
       id: 'C4',
       section: 'komunikasi',
+      core: true,
       dims: ['komunikasi', 'batas', 'regulasi', 'empati'],
       prompt: 'Saat kamu tidak setuju dengan orang yang penting bagimu, bagaimana kamu menunjukkannya?',
       options: [
@@ -429,6 +435,7 @@ window.DIRI_DATA = {
     {
       id: 'C5',
       section: 'komunikasi',
+      core: true,
       dims: ['batas', 'komunikasi'],
       prompt: 'Seberapa mudah kamu mengatakan "tidak" tanpa memberikan alasan panjang?',
       options: [
@@ -483,6 +490,7 @@ window.DIRI_DATA = {
     {
       id: 'D1',
       section: 'ei',
+      core: true,
       dims: ['sadar', 'regulasi'],
       prompt: 'Seberapa cepat kamu menyadari bahwa sesuatu sedang mengganggumu?',
       options: [
@@ -496,6 +504,7 @@ window.DIRI_DATA = {
     {
       id: 'D2',
       section: 'ei',
+      core: true,
       dims: ['regulasi', 'resiliensi'],
       prompt: 'Ketika emosi besar muncul, apa yang biasanya kamu lakukan?',
       options: [
@@ -574,6 +583,7 @@ window.DIRI_DATA = {
     {
       id: 'D8',
       section: 'ei',
+      core: true,
       dims: ['empati', 'komunikasi'],
       prompt: 'Ketika seseorang dekat denganmu sedang sedih, apa yang biasanya kamu lakukan?',
       options: [
@@ -615,6 +625,7 @@ window.DIRI_DATA = {
     {
       id: 'E1',
       section: 'pikir',
+      core: true,
       dims: ['pikir', 'sadar'],
       prompt: 'Ketika keyakinanmu terbukti salah, apa yang biasanya terjadi?',
       options: [
@@ -628,6 +639,7 @@ window.DIRI_DATA = {
     {
       id: 'E2',
       section: 'pikir',
+      core: true,
       dims: ['pikir', 'resiliensi'],
       prompt: 'Bagaimana kamu menjelaskan kegagalan?',
       options: [
@@ -680,6 +692,7 @@ window.DIRI_DATA = {
     {
       id: 'E6',
       section: 'pikir',
+      core: true,
       dims: ['regulasi', 'resiliensi'],
       prompt: 'Apa yang kamu lakukan ketika pikiranmu terus mengulang skenario buruk?',
       options: [
@@ -721,6 +734,7 @@ window.DIRI_DATA = {
     {
       id: 'F1',
       section: 'relasi',
+      core: true,
       dims: ['batas', 'komunikasi'],
       prompt: 'Ketika seseorang meminta bantuan yang sebenarnya memberatkanmu, apa yang biasanya kamu lakukan?',
       options: [
@@ -760,6 +774,7 @@ window.DIRI_DATA = {
     {
       id: 'F4',
       section: 'relasi',
+      core: true,
       dims: ['batas', 'komunikasi', 'regulasi'],
       prompt: 'Apa yang biasanya kamu lakukan ketika orang lain melanggar batasmu?',
       options: [
@@ -799,6 +814,7 @@ window.DIRI_DATA = {
     {
       id: 'F7',
       section: 'relasi',
+      core: true,
       dims: ['sadar', 'komunikasi', 'empati'],
       prompt: 'Apa yang kamu lakukan setelah menyakiti seseorang tanpa sengaja?',
       options: [
@@ -827,6 +843,7 @@ window.DIRI_DATA = {
     {
       id: 'G1',
       section: 'bawah-sadar',
+      core: true,
       dims: ['regulasi', 'resiliensi', 'sadar'],
       prompt: 'Saat stres meningkat, apa yang paling sering kamu lakukan tanpa sadar?',
       options: [
@@ -892,6 +909,7 @@ window.DIRI_DATA = {
     {
       id: 'G6',
       section: 'bawah-sadar',
+      core: true,
       dims: ['resiliensi', 'akar', 'regulasi'],
       prompt: 'Seberapa sering kamu merasa harus "selalu siap" untuk hal buruk?',
       options: [
@@ -918,6 +936,7 @@ window.DIRI_DATA = {
     {
       id: 'G8',
       section: 'bawah-sadar',
+      core: true,
       dims: ['sadar', 'resiliensi', 'pikir'],
       prompt: 'Apa yang kamu lakukan ketika kamu menyadari sedang mengulang pola yang sama?',
       options: [
@@ -933,6 +952,7 @@ window.DIRI_DATA = {
     {
       id: 'H1',
       section: 'nilai',
+      core: true,
       dims: ['pikir', 'sadar', 'resiliensi'],
       prompt: 'Apa yang paling membuat hidupmu terasa berarti?',
       options: [
@@ -959,6 +979,7 @@ window.DIRI_DATA = {
     {
       id: 'H3',
       section: 'nilai',
+      core: true,
       dims: ['sadar', 'pikir', 'batas'],
       prompt: 'Seberapa jelas kamu bisa menjelaskan nilai yang kamu pegang?',
       options: [
@@ -985,6 +1006,7 @@ window.DIRI_DATA = {
     {
       id: 'H5',
       section: 'nilai',
+      core: true,
       dims: ['pikir', 'sadar', 'resiliensi'],
       prompt: 'Jika hidupmu berjalan sesuai rencana lima tahun ke depan, apa yang paling penting untukmu?',
       options: [
@@ -1000,6 +1022,7 @@ window.DIRI_DATA = {
     {
       id: 'I1',
       section: 'pengalaman',
+      core: true,
       dims: ['resiliensi', 'sadar'],
       prompt: 'Seberapa besar pengalaman sulit di masa lalu masih memengaruhi responsmu hari ini?',
       options: [
@@ -1013,6 +1036,7 @@ window.DIRI_DATA = {
     {
       id: 'I2',
       section: 'pengalaman',
+      core: true,
       dims: ['akar', 'batas', 'resiliensi'],
       prompt: 'Apakah ada pengalaman yang membuatmu sulit mempercayai orang?',
       options: [
@@ -1026,6 +1050,7 @@ window.DIRI_DATA = {
     {
       id: 'I3',
       section: 'pengalaman',
+      core: true,
       dims: ['sadar', 'resiliensi'],
       prompt: 'Bagaimana kamu memahami hal yang paling menyakitkan dalam hidupmu?',
       options: [
