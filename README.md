@@ -22,6 +22,11 @@ assets/styles.css     Tema terang/gelap, layout responsif, gaya cetak
 assets/questions.js   70 pertanyaan, 9 bagian, metadata 8 dimensi
 assets/engine.js      Skor, sinyal perilaku, archetype, narasi, ekspor teks
 assets/app.js         Routing hash, kuis, localStorage, grafik, unduh, cetak
+assets/favicon.svg    Ikon vektor untuk tab browser
+assets/favicon-64.png Ikon PNG dan sumber apple-touch-icon
+assets/favicon.ico    Ikon untuk browser lama
+assets/og-image.png   Pratinjau 1200x630 untuk Open Graph dan Twitter Card
+assets/site.webmanifest Manifest aplikasi web
 ```
 
 Urutan skrip: Chart.js (CDN), `questions.js`, `engine.js`, `app.js`. Semuanya `defer`.
@@ -35,6 +40,7 @@ Urutan skrip: Chart.js (CDN), `questions.js`, `engine.js`, `app.js`. Semuanya `d
 - Enam bagian narasi (sekitar 820-1.000 kata) dan empat latihan konkret.
 - Unduh hasil sebagai `.txt`, cetak atau simpan sebagai PDF.
 - Mode gelap yang mengikuti preferensi sistem, bisa diganti manual.
+- Metadata Open Graph, Twitter Card, favicon, dan web app manifest.
 - Navigasi keyboard: `1`-`5` memilih, `Enter` lanjut, panah untuk berpindah opsi.
 - Tanpa akun, tanpa pengiriman jawaban ke server.
 

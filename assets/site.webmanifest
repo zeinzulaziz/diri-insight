@@ -1,0 +1,29 @@
+{
+  "name": "Diri Insight: peta diri, bukan label",
+  "short_name": "Diri Insight",
+  "description": "Alat refleksi diri dengan 70 pertanyaan dan analisis delapan dimensi.",
+  "start_url": "../",
+  "scope": "../",
+  "display": "standalone",
+  "background_color": "#F4EFE5",
+  "theme_color": "#1E2A32",
+  "lang": "id",
+  "icons": [
+    {
+      "src": "favicon-64.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
+      "src": "apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
