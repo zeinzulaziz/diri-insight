@@ -1,5 +1,5 @@
 /*
- * Mesin penilaian dan penyusun narasi Diri Insight (Revisi Logika & Sinkronisasi Narasi).
+ * Mesin penilaian dan penyusun narasi Diri Insight.
  * Tidak menyentuh DOM. Bisa diuji terpisah dari antarmuka.
  */
 (function (global) {
@@ -70,19 +70,31 @@
 
   /* ---------- Skor ---------- */
 
-  function scoreQuestions(questions, answers) {
-    var sum = 0;
-    var count = 0;
+  function questionWeightForDim(question, dimKey) {
+    if (!dimKey) return 1;
+    /* Pertanyaan masa lalu (keluarga & lingkungan) berbobot penuh di 'akar',
+       namun sedikit lebih ringan (0.85) pada dimensi keterampilan saat ini
+       agar pemulihan masa dewasa tetap tergambar adil. */
+    if (dimKey !== 'akar' && (question.section === 'keluarga' || question.section === 'lingkungan')) {
+      return 0.85;
+    }
+    return 1;
+  }
+
+  function scoreQuestions(questions, answers, dimKey) {
+    var weightedSum = 0;
+    var totalWeight = 0;
 
     questions.forEach(function (question) {
       var index = answers[question.id];
       if (typeof index !== 'number' || !question.options[index]) return;
-      sum += question.options[index].v;
-      count += 1;
+      var w = questionWeightForDim(question, dimKey);
+      weightedSum += question.options[index].v * w;
+      totalWeight += w;
     });
 
-    if (!count) return null;
-    return round(((sum - count) / (count * 4)) * 100);
+    if (!totalWeight) return null;
+    return round(((weightedSum - totalWeight) / (totalWeight * 4)) * 100);
   }
 
   function computeScores(answers) {
@@ -92,7 +104,7 @@
       var questions = DATA.questions.filter(function (question) {
         return question.dims.indexOf(key) !== -1;
       });
-      dimensions[key] = scoreQuestions(questions, answers);
+      dimensions[key] = scoreQuestions(questions, answers, key);
     });
 
     var sections = {};
@@ -100,7 +112,7 @@
       var questions = DATA.questions.filter(function (question) {
         return question.section === section.id;
       });
-      sections[section.id] = scoreQuestions(questions, answers);
+      sections[section.id] = scoreQuestions(questions, answers, null);
     });
 
     return { dimensions: dimensions, sections: sections };
@@ -128,7 +140,7 @@
     arahHidup: ['H2', 'H5']
   };
 
-  function computeSignals(answers) {
+  function computeSignals(answers, scores) {
     var signals = {};
     var weights = {};
 
@@ -137,6 +149,18 @@
       signals[key] = hits > 0;
       weights[key] = hits / SIGNAL_MAP[key].length;
     });
+
+    /* Deteksi kesenjangan kognitif vs perilaku (High Masking):
+       Paham polanya secara intelektual (sadar/pikir tinggi), tetapi
+       regulasi, batas, atau rasa aman tubuh masih tertinggal. */
+    var computed = scores || computeScores(answers);
+    var dims = computed.dimensions;
+    var cognitiveHigh = (dims.sadar >= 70 || dims.pikir >= 70);
+    var somaticLow = (dims.regulasi < 50 || dims.batas < 50 || dims.akar < 45);
+    var maskingQuestionLow = isLow(answers, 'D5') || isLow(answers, 'G1');
+
+    signals.highMasking = Boolean((cognitiveHigh && somaticLow) || (cognitiveHigh && maskingQuestionLow));
+    weights.highMasking = signals.highMasking ? 0.75 : 0;
 
     signals._weights = weights;
     return signals;
@@ -384,7 +408,8 @@
     tidakAmanSendiri: 'Kesendirian mungkin cepat berubah menjadi pertanyaan tentang nilai dirimu. Kamu bisa mengisi waktu, tetapi tidak selalu bisa mengisi ruangnya.',
     pujianSulit: 'Pujian mungkin terasa seperti sesuatu yang harus dicurigai atau dibayar. Kamu bisa lebih mudah mempercayai kritik daripada penghargaan.',
     nilaiKabur: 'Nilai hidupmu mungkin masih lebih banyak diwarisi daripada dipilih. Kamu bisa mengikuti arah yang jelas tanpa yakin bahwa itu benar-benar arahmu.',
-    arahHidup: 'Kamu mungkin lebih sering menunggu rasa pasti sebelum bergerak. Padahal arah sering terbentuk setelah langkah kecil, bukan sebelum langkah pertama.'
+    arahHidup: 'Kamu mungkin lebih sering menunggu rasa pasti sebelum bergerak. Padahal arah sering terbentuk setelah langkah kecil, bukan sebelum langkah pertama.',
+    highMasking: 'Ada jarak antara seberapa jernih kamu memahami diri di kepala dan seberapa tenang tubuhmu saat tekanan datang. Kamu terlihat berfungsi dan rapi di luar, sementara di dalam butuh tenaga ekstra untuk menjaga topeng itu tetap terpasang.'
   };
 
   var PRACTICES = {
@@ -525,6 +550,15 @@
         'Kirim pesan singkat: "Aku sedang berat di bagian ini. Boleh aku cerita?"',
         'Latih menerima bantuan tanpa langsung membalasnya dengan sesuatu.'
       ]
+    },
+    highMasking: {
+      title: 'Lepas satu topeng di ruang yang aman',
+      why: 'Memahami diri secara intelektual tidak cukup jika tubuh terus diminta berpura-pura baik-baik saja.',
+      steps: [
+        'Pilih satu interaksi minggu ini di mana kamu tidak harus tampil serba mampu.',
+        'Jawab pertanyaan "apa kabar?" dengan satu kalimat jujur yang sederhana, misal: "Lagi agak penuh minggu ini."',
+        'Amati bahwa hubungan yang sehat tidak runtuh hanya karena kamu sedang lelah.'
+      ]
     }
   };
 
@@ -535,7 +569,6 @@
       return { key: key, value: scores.dimensions[key], meta: DATA.dimensions[key], idx: idx };
     }).sort(function (a, b) {
       if (b.value !== a.value) return b.value - a.value;
-      /* Tie-breaker: prioritaskan dimensi dengan deviasi lebih tajam dari titik tengah 50 */
       var diffA = Math.abs(a.value - 50);
       var diffB = Math.abs(b.value - 50);
       if (diffB !== diffA) return diffB - diffA;
@@ -550,7 +583,8 @@
     ruminasi: 'Mengulang skenario untuk mencari rasa aman',
     waspada: 'Tetap waspada bahkan saat tidak ada ancaman',
     menyimpanSendiri: 'Menanggung sendiri agar tidak merepotkan',
-    lukaBelumOlah: 'Merespons situasi sekarang dengan alarm masa lalu'
+    lukaBelumOlah: 'Merespons situasi sekarang dengan alarm masa lalu',
+    highMasking: 'Terlihat tenang dan paham di luar, sementara di dalam menahan beban'
   };
 
   function pickPattern(signals) {
@@ -576,7 +610,6 @@
       return signals[key] && !(used && used[key]);
     });
 
-    /* Urutkan berdasarkan intensitas sinyal tertinggi lebih dulu */
     active.sort(function (a, b) {
       return (weights[b] || 0) - (weights[a] || 0);
     });
@@ -801,7 +834,7 @@
     );
 
     var blindSignals = pickSignals(signals, [
-      'kritikDiri', 'ruminasi', 'peoplePleasing', 'menghindarKonflik', 'waspada', 'lukaBelumOlah', 'menyimpanSendiri', 'pujianSulit'
+      'highMasking', 'kritikDiri', 'ruminasi', 'peoplePleasing', 'menghindarKonflik', 'waspada', 'lukaBelumOlah', 'menyimpanSendiri', 'pujianSulit'
     ], 2, usedSignals);
 
     if (blindSignals.length) {
@@ -842,7 +875,6 @@
     return paragraphs;
   }
 
-  /* Pasangan latihan yang terlalu mirip agar tidak muncul bersamaan */
   var PRACTICE_OVERLAPS = {
     peoplePleasing: ['batas'],
     menghindarKonflik: ['komunikasi'],
@@ -867,7 +899,7 @@
     addDimPractice(sorted[sorted.length - 2].key);
 
     var signalPriority = [
-      'peoplePleasing', 'kritikDiri', 'ruminasi', 'menghindarKonflik', 'waspada', 'lukaBelumOlah', 'menyimpanSendiri'
+      'highMasking', 'peoplePleasing', 'kritikDiri', 'ruminasi', 'menghindarKonflik', 'waspada', 'lukaBelumOlah', 'menyimpanSendiri'
     ].filter(function (key) {
       return !!signals[key];
     }).sort(function (a, b) {
@@ -970,7 +1002,7 @@
 
   function buildResult(answers) {
     var scores = computeScores(answers);
-    var signals = computeSignals(answers);
+    var signals = computeSignals(answers, scores);
     var narrative = buildNarrative(scores, signals);
     var sorted = sortedDimensions(scores);
 

@@ -304,8 +304,8 @@
     var selected = state.answers[question.id];
     var order = ENGINE.getOptionOrder(question, state.seed);
 
-    els.quizSectionLabel.textContent = 'Bagian ' + sectionNumber + ' dari ' + DATA.sections.length;
-    els.quizKicker.textContent = 'Bagian ' + sectionNumber + ' · ' + section.short;
+    els.quizSectionLabel.textContent = 'Bagian ' + sectionNumber + ' dari ' + DATA.sections.length + ' · ' + section.name;
+    els.quizKicker.textContent = 'Pertanyaan ' + (state.current + 1) + ' dari ' + TOTAL + ' · ' + section.short;
     els.quizQuestion.textContent = question.prompt;
 
     els.quizOptions.innerHTML = '';
@@ -990,6 +990,10 @@
       if (isNaN(index)) return;
 
       state.answers[question.id] = index;
+      /* Invalidasi cache hasil jika user mengubah jawaban */
+      state.result = null;
+      state.resultRendered = false;
+
       var saved = persistAnswers();
 
       Array.prototype.forEach.call(els.quizOptions.querySelectorAll('.option'), function (label) {
@@ -1039,6 +1043,18 @@
         if (activeTag === 'BUTTON' || activeTag === 'A') return;
         event.preventDefault();
         goNext();
+        return;
+      }
+
+      if (event.key === 'ArrowRight' && activeTag !== 'INPUT') {
+        event.preventDefault();
+        goNext();
+        return;
+      }
+
+      if (event.key === 'ArrowLeft' && activeTag !== 'INPUT') {
+        event.preventDefault();
+        goPrevious();
       }
     });
 
