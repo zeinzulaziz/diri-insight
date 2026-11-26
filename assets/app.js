@@ -1,6 +1,5 @@
 /*
- * Diri Insight: antarmuka, penyimpanan lokal, dan navigasi.
- * Mesin skor dan narasi ada di engine.js agar bisa diuji terpisah.
+ * Diri Insight: antarmuka, penyimpanan lokal, mode ringkas/lengkap, dan share card.
  */
 (function () {
   'use strict';
@@ -13,11 +12,11 @@
     return;
   }
 
-  var TOTAL = DATA.questions.length;
   var KEYS = {
     answers: 'diri-insight:v1:answers',
     current: 'diri-insight:v1:current',
     seed: 'diri-insight:v1:seed',
+    mode: 'diri-insight:v1:mode',
     theme: 'diri-insight:theme'
   };
   var REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -26,6 +25,7 @@
     answers: {},
     current: 0,
     seed: '',
+    mode: 'full',
     screen: 'landing',
     result: null,
     resultRendered: false,
@@ -37,6 +37,10 @@
   };
 
   var els = {};
+
+  function activeQuestions() {
+    return ENGINE.getQuestions(state.mode);
+  }
 
   /* ---------- Penyimpanan ---------- */
 
@@ -88,7 +92,7 @@
     try {
       window.localStorage.removeItem(key);
     } catch (error) {
-      /* Penyimpanan tidak tersedia. State di memori tetap berjalan. */
+      /* Abaikan jika storage diblokir */
     }
   }
 
@@ -115,11 +119,18 @@
     return ok;
   }
 
+  function persistMode() {
+    writeString(KEYS.mode, state.mode);
+  }
+
   function createSeed() {
     return String(Date.now()) + '-' + Math.random().toString(36).slice(2, 10);
   }
 
   function loadSavedState() {
+    var savedMode = readString(KEYS.mode, 'full');
+    state.mode = savedMode === 'short' ? 'short' : 'full';
+
     var raw = readJSON(KEYS.answers, {});
     var clean = {};
 
@@ -132,13 +143,48 @@
 
     state.answers = clean;
 
+    var total = activeQuestions().length;
     var savedCurrent = parseInt(readString(KEYS.current, '0'), 10);
-    state.current = isNaN(savedCurrent) ? 0 : Math.max(0, Math.min(TOTAL - 1, savedCurrent));
+    state.current = isNaN(savedCurrent) ? 0 : Math.max(0, Math.min(total - 1, savedCurrent));
 
     state.seed = readString(KEYS.seed, '');
     if (!state.seed) {
       state.seed = createSeed();
       persistSeed();
+    }
+  }
+
+  /* ---------- Mode Ringkas vs Lengkap ---------- */
+
+  function setMode(newMode) {
+    var normalized = newMode === 'short' ? 'short' : 'full';
+    if (state.mode === normalized) return;
+
+    state.mode = normalized;
+    state.current = 0;
+    state.result = null;
+    state.resultRendered = false;
+    persistMode();
+    persistCurrent();
+    updateModeUI();
+    refreshGlobalState();
+  }
+
+  function updateModeUI() {
+    if (!els.modeFull || !els.modeShort) return;
+    var isShort = state.mode === 'short';
+    els.modeFull.classList.toggle('is-active', !isShort);
+    els.modeFull.setAttribute('aria-pressed', !isShort ? 'true' : 'false');
+    els.modeShort.classList.toggle('is-active', isShort);
+    els.modeShort.setAttribute('aria-pressed', isShort ? 'true' : 'false');
+
+    if (els.heroEyebrow) {
+      els.heroEyebrow.textContent = isShort
+        ? 'Alat refleksi diri · 27 pertanyaan inti'
+        : 'Alat refleksi diri · 70 pertanyaan lengkap';
+    }
+    if (els.heroDuration) {
+      els.heroDuration.textContent = isShort ? '5-8 menit' : '15-25 menit';
     }
   }
 
@@ -161,7 +207,7 @@
     document.documentElement.setAttribute('data-theme', theme);
     if (persist) writeString(KEYS.theme, theme);
     updateThemeButton();
-    if (state.result && els.content && !els.content.hidden) renderChart();
+    if (state.result && els.resultContent && !els.resultContent.hidden) renderChart();
   }
 
   function toggleTheme() {
@@ -228,7 +274,7 @@
 
     if (opts.focus !== false) {
       if (name === 'landing') focusHeading(els.heroTitle);
-      if (name === 'results' && els.content && !els.content.hidden) focusHeading(els.resultTitle);
+      if (name === 'results' && els.resultContent && !els.resultContent.hidden) focusHeading(els.resultTitle);
     }
   }
 
@@ -241,7 +287,7 @@
     }
 
     if (hash === '#/tes') {
-      if (ENGINE.isComplete(state.answers)) {
+      if (ENGINE.isComplete(state.answers, state.mode)) {
         window.location.replace('#/hasil');
         return;
       }
@@ -270,7 +316,10 @@
   /* ---------- Kuis ---------- */
 
   function openQuiz() {
-    if (ENGINE.isComplete(state.answers)) {
+    var questions = activeQuestions();
+    var total = questions.length;
+
+    if (ENGINE.isComplete(state.answers, state.mode)) {
       if (window.location.hash !== '#/hasil') window.location.replace('#/hasil');
       return;
     }
@@ -280,7 +329,15 @@
       persistSeed();
     }
 
-    if (state.current < 0 || state.current >= TOTAL) state.current = 0;
+    /* Arahkan ke pertanyaan pertama yang belum terjawab jika index saat ini sudah dijawab */
+    var firstUnanswered = questions.findIndex(function (q) {
+      return typeof state.answers[q.id] !== 'number';
+    });
+    if (firstUnanswered !== -1 && typeof state.answers[questions[state.current] && questions[state.current].id] === 'number') {
+      state.current = firstUnanswered;
+    }
+
+    if (state.current < 0 || state.current >= total) state.current = 0;
 
     state.lastSection = null;
     renderQuestion({ focus: true });
@@ -297,7 +354,9 @@
 
   function renderQuestion(options) {
     var opts = options || {};
-    var question = DATA.questions[state.current];
+    var questions = activeQuestions();
+    var total = questions.length;
+    var question = questions[state.current];
     var sectionInfo = sectionForQuestion(question);
     var section = sectionInfo.section;
     var sectionNumber = sectionInfo.index + 1;
@@ -305,7 +364,7 @@
     var order = ENGINE.getOptionOrder(question, state.seed);
 
     els.quizSectionLabel.textContent = 'Bagian ' + sectionNumber + ' dari ' + DATA.sections.length + ' · ' + section.name;
-    els.quizKicker.textContent = 'Pertanyaan ' + (state.current + 1) + ' dari ' + TOTAL + ' · ' + section.short;
+    els.quizKicker.textContent = 'Pertanyaan ' + (state.current + 1) + ' dari ' + total + ' · ' + section.short;
     els.quizQuestion.textContent = question.prompt;
 
     els.quizOptions.innerHTML = '';
@@ -347,7 +406,7 @@
 
     els.quizHint.classList.remove('is-alert');
     if (typeof selected === 'number') {
-      els.quizHint.textContent = state.current === TOTAL - 1
+      els.quizHint.textContent = state.current === total - 1
         ? 'Jawaban tersimpan. Tekan "Lihat hasil" untuk menghitung profilmu.'
         : 'Jawaban tersimpan. Kamu bisa mengubahnya sebelum lanjut.';
     } else {
@@ -369,7 +428,7 @@
       }, 30);
     }
 
-    announce('Pertanyaan ' + (state.current + 1) + ' dari ' + TOTAL + '.');
+    announce('Pertanyaan ' + (state.current + 1) + ' dari ' + total + '.');
 
     if (state.lastSection && state.lastSection !== question.section) {
       showToast('Bagian ' + sectionNumber + ' dari ' + DATA.sections.length + ' · ' + section.name);
@@ -378,21 +437,24 @@
   }
 
   function updateProgress() {
-    var answered = ENGINE.answeredCount(state.answers);
-    var percent = (answered / TOTAL) * 100;
+    var total = activeQuestions().length;
+    var answered = ENGINE.answeredCount(state.answers, state.mode);
+    var percent = (answered / total) * 100;
 
     els.quizProgressFill.style.width = percent + '%';
-    els.quizProgressText.textContent = answered + ' dari ' + TOTAL + ' terjawab';
+    els.quizProgressText.textContent = answered + ' dari ' + total + ' terjawab';
     els.quizProgressTrack.setAttribute('aria-valuenow', String(answered));
-    els.quizProgressTrack.setAttribute('aria-valuemax', String(TOTAL));
+    els.quizProgressTrack.setAttribute('aria-valuemax', String(total));
   }
 
   function updateNextState() {
-    var question = DATA.questions[state.current];
+    var questions = activeQuestions();
+    var total = questions.length;
+    var question = questions[state.current];
     var answered = typeof state.answers[question.id] === 'number';
 
     els.btnNext.disabled = !answered;
-    els.btnNext.textContent = state.current === TOTAL - 1 ? 'Lihat hasil' : 'Selanjutnya';
+    els.btnNext.textContent = state.current === total - 1 ? 'Lihat hasil' : 'Selanjutnya';
     els.btnPrev.disabled = state.current === 0;
   }
 
@@ -403,7 +465,9 @@
   }
 
   function goNext() {
-    var question = DATA.questions[state.current];
+    var questions = activeQuestions();
+    var total = questions.length;
+    var question = questions[state.current];
 
     if (typeof state.answers[question.id] !== 'number') {
       els.quizHint.textContent = 'Pilih satu jawaban dulu sebelum lanjut.';
@@ -414,7 +478,7 @@
       return;
     }
 
-    if (state.current < TOTAL - 1) {
+    if (state.current < total - 1) {
       state.current += 1;
       persistCurrent();
       renderQuestion({ focus: true });
@@ -422,7 +486,7 @@
       return;
     }
 
-    if (ENGINE.isComplete(state.answers)) {
+    if (ENGINE.isComplete(state.answers, state.mode)) {
       persistCurrent();
       if (window.location.hash === '#/hasil') {
         openResults();
@@ -432,7 +496,7 @@
       return;
     }
 
-    var missing = DATA.questions.findIndex(function (item) {
+    var missing = questions.findIndex(function (item) {
       return typeof state.answers[item.id] !== 'number';
     });
 
@@ -464,7 +528,7 @@
   }
 
   function openResults() {
-    if (!ENGINE.isComplete(state.answers)) {
+    if (!ENGINE.isComplete(state.answers, state.mode)) {
       clearLoading();
       els.loading.hidden = true;
       els.content.hidden = true;
@@ -477,7 +541,7 @@
     els.empty.hidden = true;
     els.screenResults.setAttribute('aria-labelledby', 'resultTitle');
 
-    if (state.result && state.resultRendered) {
+    if (state.result && state.result.mode === state.mode && state.resultRendered) {
       els.loading.hidden = true;
       els.content.hidden = false;
       focusHeading(els.resultTitle);
@@ -503,7 +567,7 @@
     var stageIndex = 0;
     els.loadingMessage.textContent = stages[0];
 
-    state.result = ENGINE.buildResult(state.answers);
+    state.result = ENGINE.buildResult(state.answers, state.mode);
 
     var interval = window.setInterval(function () {
       stageIndex = (stageIndex + 1) % stages.length;
@@ -519,7 +583,7 @@
       renderResult(state.result);
       els.content.hidden = false;
       focusHeading(els.resultTitle);
-    }, 2200);
+    }, 2000);
     state.loadingTimers.push(timeout);
   }
 
@@ -529,7 +593,8 @@
   }
 
   function renderResult(result) {
-    els.resultDate.textContent = 'Peta dirimu · ' + formatDate(result.generatedAt);
+    var modeBadge = result.mode === 'short' ? 'Mode Ringkas (27 soal)' : 'Mode Lengkap (70 soal)';
+    els.resultDate.textContent = 'Peta dirimu · ' + modeBadge + ' · ' + formatDate(result.generatedAt);
     els.resultTitle.textContent = result.archetype.title;
     els.resultLine.textContent = result.archetype.line;
     els.resultSummary.textContent = result.archetype.summary;
@@ -761,7 +826,7 @@
     });
   }
 
-  /* ---------- Unduh dan cetak ---------- */
+  /* ---------- Unduh teks, kartu gambar PNG, dan cetak ---------- */
 
   function dateSlug() {
     var date = new Date();
@@ -787,6 +852,194 @@
       showToast('Hasil diunduh sebagai berkas teks.');
     } catch (error) {
       showToast('Unduhan gagal. Coba tombol cetak untuk menyimpan PDF.');
+    }
+  }
+
+  function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight) {
+    var words = String(text).split(/\s+/);
+    var line = '';
+    var currentY = y;
+
+    for (var i = 0; i < words.length; i += 1) {
+      var testLine = line + words[i] + ' ';
+      var metrics = ctx.measureText(testLine);
+      if (metrics.width > maxWidth && i > 0) {
+        ctx.fillText(line.trim(), x, currentY);
+        line = words[i] + ' ';
+        currentY += lineHeight;
+      } else {
+        line = testLine;
+      }
+    }
+    if (line.trim()) {
+      ctx.fillText(line.trim(), x, currentY);
+      currentY += lineHeight;
+    }
+    return currentY;
+  }
+
+  function downloadShareCard() {
+    if (!state.result) return;
+
+    try {
+      var result = state.result;
+      var dark = currentTheme() === 'dark';
+      var bg = dark ? '#141C1D' : '#F4EFE5';
+      var cardBg = dark ? '#1B2527' : '#FBF8F1';
+      var ink = dark ? '#EDE8DD' : '#1E282A';
+      var inkSoft = dark ? '#A9B2B0' : '#4E5A5C';
+      var sage = dark ? '#8AA68B' : '#4F6350';
+      var clay = dark ? '#D68468' : '#9E5339';
+      var line = dark ? '#2D3A3C' : '#D8D0C0';
+
+      var canvas = document.createElement('canvas');
+      canvas.width = 1080;
+      canvas.height = 1350;
+      var ctx = canvas.getContext('2d');
+
+      /* Latar luar */
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, 1080, 1350);
+
+      /* Bingkai kartu utama */
+      ctx.fillStyle = cardBg;
+      ctx.fillRect(56, 56, 968, 1238);
+      ctx.strokeStyle = line;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(56, 56, 968, 1238);
+
+      /* Header kecil */
+      ctx.fillStyle = sage;
+      ctx.font = '600 22px "Instrument Sans", sans-serif';
+      ctx.fillText('DIRI INSIGHT · PETA DIRI', 112, 134);
+
+      ctx.fillStyle = inkSoft;
+      ctx.font = '400 22px "Instrument Sans", sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(formatDate(result.generatedAt), 968, 134);
+      ctx.textAlign = 'left';
+
+      /* Judul Archetype */
+      ctx.fillStyle = ink;
+      ctx.font = '500 68px "Fraunces", Georgia, serif';
+      var nextY = wrapCanvasText(ctx, result.archetype.title, 112, 232, 856, 78);
+
+      /* Subjudul Archetype */
+      ctx.fillStyle = inkSoft;
+      ctx.font = 'italic 30px "Fraunces", Georgia, serif';
+      nextY = wrapCanvasText(ctx, result.archetype.line, 112, nextY + 14, 856, 42);
+
+      /* Garis pemisah */
+      nextY += 22;
+      ctx.strokeStyle = line;
+      ctx.beginPath();
+      ctx.moveTo(112, nextY);
+      ctx.lineTo(968, nextY);
+      ctx.stroke();
+
+      /* 3 Fakta Ringkas */
+      nextY += 46;
+      var colW = 275;
+      var facts = [
+        { label: 'KEKUATAN UTAMA', val: result.archetype.strength.meta.name, color: sage },
+        { label: 'TITIK GESEK', val: result.archetype.friction.meta.name, color: clay },
+        { label: 'MODE ANALISIS', val: result.mode === 'short' ? '27 Soal Inti' : '70 Soal Lengkap', color: ink }
+      ];
+
+      facts.forEach(function (item, idx) {
+        var fx = 112 + idx * (colW + 15);
+        ctx.fillStyle = inkSoft;
+        ctx.font = '600 18px "Instrument Sans", sans-serif';
+        ctx.fillText(item.label, fx, nextY);
+
+        ctx.fillStyle = item.color;
+        ctx.font = '600 26px "Instrument Sans", sans-serif';
+        wrapCanvasText(ctx, item.val, fx, nextY + 38, colW, 34);
+      });
+
+      /* Bar Skor 8 Dimensi */
+      nextY += 126;
+      ctx.strokeStyle = line;
+      ctx.beginPath();
+      ctx.moveTo(112, nextY);
+      ctx.lineTo(968, nextY);
+      ctx.stroke();
+
+      nextY += 44;
+      ctx.fillStyle = inkSoft;
+      ctx.font = '600 19px "Instrument Sans", sans-serif';
+      ctx.fillText('DELAPAN DIMENSI (0-100)', 112, nextY);
+
+      nextY += 38;
+      var dimKeys = Object.keys(DATA.dimensions);
+      dimKeys.forEach(function (key) {
+        var meta = DATA.dimensions[key];
+        var val = result.scores.dimensions[key];
+        var isLowScore = val < 45;
+
+        ctx.fillStyle = ink;
+        ctx.font = '500 24px "Instrument Sans", sans-serif';
+        ctx.fillText(meta.name, 112, nextY);
+
+        ctx.fillStyle = isLowScore ? clay : sage;
+        ctx.font = '600 24px "Instrument Sans", sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(String(val), 968, nextY);
+        ctx.textAlign = 'left';
+
+        /* Track bar */
+        var barY = nextY + 12;
+        ctx.fillStyle = line;
+        ctx.fillRect(112, barY, 856, 10);
+
+        /* Fill bar */
+        ctx.fillStyle = isLowScore ? clay : sage;
+        ctx.fillRect(112, barY, Math.round((val / 100) * 856), 10);
+
+        nextY += 56;
+      });
+
+      /* Kotak Pola Bawah Sadar */
+      nextY += 14;
+      ctx.fillStyle = dark ? '#222E30' : '#EFE9DC';
+      ctx.fillRect(112, nextY, 856, 118);
+
+      ctx.fillStyle = clay;
+      ctx.font = '600 18px "Instrument Sans", sans-serif';
+      ctx.fillText('POLA YANG SERING MUNCUL', 140, nextY + 38);
+
+      ctx.fillStyle = ink;
+      ctx.font = '500 25px "Instrument Sans", sans-serif';
+      wrapCanvasText(ctx, result.pattern, 140, nextY + 76, 800, 34);
+
+      /* Footer kartu */
+      ctx.fillStyle = inkSoft;
+      ctx.font = '400 20px "Instrument Sans", sans-serif';
+      ctx.fillText('Alat refleksi diri, bukan label atau diagnosis.', 112, 1244);
+
+      ctx.textAlign = 'right';
+      ctx.fillText('zeinzulaziz.github.io/diri-insight', 968, 1244);
+      ctx.textAlign = 'left';
+
+      canvas.toBlob(function (blob) {
+        if (!blob) {
+          showToast('Gagal membuat gambar kartu.');
+          return;
+        }
+        var url = URL.createObjectURL(blob);
+        var link = document.createElement('a');
+        link.href = url;
+        link.download = 'diri-insight-kartu-' + dateSlug() + '.png';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(function () {
+          URL.revokeObjectURL(url);
+        }, 1200);
+        showToast('Kartu ringkasan PNG berhasil diunduh.');
+      }, 'image/png');
+    } catch (error) {
+      showToast('Gagal mengekspor kartu gambar.');
     }
   }
 
@@ -821,7 +1074,7 @@
       state.chart = null;
     }
 
-    els.content.hidden = true;
+    els.resultContent.hidden = true;
     els.narrative.innerHTML = '';
     els.practiceList.innerHTML = '';
     els.scoreBars.innerHTML = '';
@@ -838,10 +1091,11 @@
   /* ---------- Bagian landing yang dinamis ---------- */
 
   function refreshGlobalState() {
-    var answered = ENGINE.answeredCount(state.answers);
-    var complete = answered === TOTAL;
+    var total = activeQuestions().length;
+    var answered = ENGINE.answeredCount(state.answers, state.mode);
+    var complete = answered === total;
     var partial = answered > 0 && !complete;
-    var percent = Math.round((answered / TOTAL) * 100);
+    var percent = Math.round((answered / total) * 100);
 
     if (els.headerStart) {
       els.headerStart.textContent = complete ? 'Lihat hasil' : partial ? 'Lanjutkan' : 'Mulai';
@@ -849,7 +1103,11 @@
     }
 
     if (els.heroStart) {
-      els.heroStart.textContent = complete ? 'Lihat hasil terakhir' : partial ? 'Lanjutkan analisis' : 'Mulai memetakan diri';
+      els.heroStart.textContent = complete
+        ? 'Lihat hasil terakhir'
+        : partial
+          ? 'Lanjutkan analisis'
+          : (state.mode === 'short' ? 'Mulai mode ringkas (27 soal)' : 'Mulai memetakan diri');
       els.heroStart.href = complete ? '#/hasil' : '#/tes';
     }
 
@@ -861,16 +1119,17 @@
     }
 
     els.resumePanel.hidden = false;
+    var modeName = state.mode === 'short' ? 'Mode Ringkas' : 'Mode Lengkap';
 
     if (complete) {
-      els.resumeTitle.textContent = 'Analisis terakhir siap';
-      els.resumeCopy.textContent = 'Kamu sudah menjawab ' + TOTAL + ' pertanyaan. Hasil bisa dibaca ulang kapan saja.';
+      els.resumeTitle.textContent = 'Analisis terakhir siap (' + modeName + ')';
+      els.resumeCopy.textContent = 'Kamu sudah menjawab ' + total + ' pertanyaan. Hasil bisa dibaca ulang kapan saja.';
       els.resumeContinue.textContent = 'Lihat hasil';
       els.resumeContinue.href = '#/hasil';
       els.resumeReset.textContent = 'Ulangi analisis';
     } else {
-      els.resumeTitle.textContent = 'Progres tersimpan';
-      els.resumeCopy.textContent = answered + ' dari ' + TOTAL + ' pertanyaan terjawab (' + percent + '%).';
+      els.resumeTitle.textContent = 'Progres tersimpan (' + modeName + ')';
+      els.resumeCopy.textContent = answered + ' dari ' + total + ' pertanyaan terjawab (' + percent + '%).';
       els.resumeContinue.textContent = 'Lanjutkan';
       els.resumeContinue.href = '#/tes';
       els.resumeReset.textContent = 'Mulai dari awal';
@@ -905,25 +1164,15 @@
 
   /* ---------- Inisialisasi ---------- */
 
-  /*
-   * Manifest hanya dimuat lewat http/https. Di file:// Chrome memblokirnya
-   * karena origin null dan memenuhi console dengan error CORS.
-   */
-  function addManifest() {
-    if (window.location.protocol !== 'http:' && window.location.protocol !== 'https:') return;
-    if (document.querySelector('link[rel="manifest"]')) return;
-
-    var link = document.createElement('link');
-    link.rel = 'manifest';
-    link.href = 'assets/site.webmanifest';
-    document.head.appendChild(link);
-  }
-
   function cacheElements() {
     els.screenLanding = document.getElementById('screen-landing');
     els.screenQuiz = document.getElementById('screen-quiz');
     els.screenResults = document.getElementById('screen-results');
+    els.heroEyebrow = document.getElementById('heroEyebrow');
     els.heroTitle = document.getElementById('heroTitle');
+    els.heroDuration = document.getElementById('heroDuration');
+    els.modeFull = document.getElementById('modeFull');
+    els.modeShort = document.getElementById('modeShort');
     els.headerStart = document.getElementById('headerStart');
     els.heroStart = document.getElementById('heroStart');
     els.resumePanel = document.getElementById('resumePanel');
@@ -963,6 +1212,7 @@
     els.chartFallback = document.getElementById('chartFallback');
     els.narrative = document.getElementById('narrative');
     els.practiceList = document.getElementById('practiceList');
+    els.btnShareCard = document.getElementById('btnShareCard');
     els.btnDownload = document.getElementById('btnDownload');
     els.btnPrint = document.getElementById('btnPrint');
     els.btnRetake = document.getElementById('btnRetake');
@@ -974,9 +1224,12 @@
 
   function bindEvents() {
     els.themeToggle.addEventListener('click', toggleTheme);
+    if (els.modeFull) els.modeFull.addEventListener('click', function () { setMode('full'); });
+    if (els.modeShort) els.modeShort.addEventListener('click', function () { setMode('short'); });
     els.resumeReset.addEventListener('click', askRestart);
     els.btnPrev.addEventListener('click', goPrevious);
     els.btnNext.addEventListener('click', goNext);
+    if (els.btnShareCard) els.btnShareCard.addEventListener('click', downloadShareCard);
     els.btnDownload.addEventListener('click', downloadResult);
     els.btnPrint.addEventListener('click', function () { window.print(); });
     els.btnRetake.addEventListener('click', askRestart);
@@ -985,12 +1238,13 @@
       var input = event.target;
       if (!input || input.type !== 'radio') return;
 
-      var question = DATA.questions[state.current];
+      var questions = activeQuestions();
+      var total = questions.length;
+      var question = questions[state.current];
       var index = parseInt(input.value, 10);
       if (isNaN(index)) return;
 
       state.answers[question.id] = index;
-      /* Invalidasi cache hasil jika user mengubah jawaban */
       state.result = null;
       state.resultRendered = false;
 
@@ -1006,7 +1260,7 @@
 
       els.quizHint.classList.remove('is-alert');
       if (saved) {
-        els.quizHint.textContent = state.current === TOTAL - 1
+        els.quizHint.textContent = state.current === total - 1
           ? 'Jawaban tersimpan. Tekan "Lihat hasil" untuk menghitung profilmu.'
           : 'Jawaban tersimpan di perangkat ini.';
       } else {
@@ -1068,9 +1322,9 @@
     if (!state.storageOK && els.storageWarning) els.storageWarning.hidden = false;
 
     loadSavedState();
+    updateModeUI();
     renderDimensionList();
     updateThemeButton();
-    addManifest();
     bindEvents();
     refreshGlobalState();
 
